@@ -45,3 +45,4 @@ C:\Users\VHON\Documents\Source_Codes\Blazor\HazelNet\HazelNet-Web\obj\Debug\net9
 C:\Users\VHON\Documents\Source_Codes\Blazor\HazelNet\HazelNet-Web\obj\Debug\net9.0\`HazelNet-Web.pdb
 C:\Users\VHON\Documents\Source_Codes\Blazor\HazelNet\HazelNet-Web\obj\Debug\net9.0\HazelNet-Web.genruntimeconfig.cache
 C:\Users\VHON\Documents\Source_Codes\Blazor\HazelNet\HazelNet-Web\obj\Debug\net9.0\ref\`HazelNet-Web.dll
+C:\Users\VHON\Documents\Source_Codes\Blazor\HazelNet\HazelNet-Web\obj\Debug\net9.0\HazelNet-Web.sourcelink.json

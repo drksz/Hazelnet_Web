@@ -1,0 +1,12 @@
+C:\Users\VHON\Documents\Source_Codes\Blazor\HazelNet\HazelNet-Domain\bin\Debug\net9.0\HazelNet-Domain.deps.json
+C:\Users\VHON\Documents\Source_Codes\Blazor\HazelNet\HazelNet-Domain\bin\Debug\net9.0\HazelNet-Domain.dll
+C:\Users\VHON\Documents\Source_Codes\Blazor\HazelNet\HazelNet-Domain\bin\Debug\net9.0\HazelNet-Domain.pdb
+C:\Users\VHON\Documents\Source_Codes\Blazor\HazelNet\HazelNet-Domain\obj\Debug\net9.0\HazelNet-Domain.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\VHON\Documents\Source_Codes\Blazor\HazelNet\HazelNet-Domain\obj\Debug\net9.0\HazelNet-Domain.AssemblyInfoInputs.cache
+C:\Users\VHON\Documents\Source_Codes\Blazor\HazelNet\HazelNet-Domain\obj\Debug\net9.0\HazelNet-Domain.AssemblyInfo.cs
+C:\Users\VHON\Documents\Source_Codes\Blazor\HazelNet\HazelNet-Domain\obj\Debug\net9.0\HazelNet-Domain.csproj.CoreCompileInputs.cache
+C:\Users\VHON\Documents\Source_Codes\Blazor\HazelNet\HazelNet-Domain\obj\Debug\net9.0\HazelNet-Domain.sourcelink.json
+C:\Users\VHON\Documents\Source_Codes\Blazor\HazelNet\HazelNet-Domain\obj\Debug\net9.0\HazelNet-Domain.dll
+C:\Users\VHON\Documents\Source_Codes\Blazor\HazelNet\HazelNet-Domain\obj\Debug\net9.0\refint\HazelNet-Domain.dll
+C:\Users\VHON\Documents\Source_Codes\Blazor\HazelNet\HazelNet-Domain\obj\Debug\net9.0\HazelNet-Domain.pdb
+C:\Users\VHON\Documents\Source_Codes\Blazor\HazelNet\HazelNet-Domain\obj\Debug\net9.0\ref\HazelNet-Domain.dll

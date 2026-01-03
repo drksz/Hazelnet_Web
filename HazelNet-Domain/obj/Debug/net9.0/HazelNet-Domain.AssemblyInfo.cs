@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("HazelNet-Domain")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+ffc4942b4a6a90065469960d1ee4ca24d5bbc688")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+f13013645c7b91e46deae1749d8200464b708de5")]
 [assembly: System.Reflection.AssemblyProductAttribute("HazelNet-Domain")]
 [assembly: System.Reflection.AssemblyTitleAttribute("HazelNet-Domain")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

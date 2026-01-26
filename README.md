@@ -1,6 +1,7 @@
 ## HazelNet Web
 
 A modern flashcard and space-repetition study web application build with .NET and Blazor Interactive Server.
+This was started mainly as a project requirement for the class of SE1 and SE2.
 
 This project is a continuation and re-imagining of HazelNet, which originally started as cross-platoform desktop application build using AvaloniaUI (unfinished).
 

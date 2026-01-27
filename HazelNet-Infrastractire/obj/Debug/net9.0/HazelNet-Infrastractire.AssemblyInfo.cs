@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("HazelNet-Infrastractire")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+f13013645c7b91e46deae1749d8200464b708de5")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+39bfaf5f49c20c544ac4f743c68bdf0c88d230d0")]
 [assembly: System.Reflection.AssemblyProductAttribute("HazelNet-Infrastractire")]
 [assembly: System.Reflection.AssemblyTitleAttribute("HazelNet-Infrastractire")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

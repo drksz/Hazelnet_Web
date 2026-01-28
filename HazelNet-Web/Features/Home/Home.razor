@@ -70,6 +70,7 @@
         </MudPaper>
     </MudPaper>
     
+    <!--Feature Section-->
     <MudContainer MaxWidth="MaxWidth.Medium" Class="pa-10">
     
         <div class="d-flex flex-column align-center mb-10">
@@ -80,59 +81,178 @@
                 Discover our App
             </MudText>
         </div>
-
-        <MudGrid Spacing="4" Class="mt-5" AlignItems="AlignItems.Center">
         
-            <MudItem xs="12" md="5">
-                <MudStack Spacing="2">
-                    <MudText Typo="Typo.h3" GutterBottom="true">
-                        Create Decks
-                    </MudText>
-                    <MudText Typo="Typo.body1" Style="line-height: 1.5;">
-                        Organize your learning by creating custom decks
-                        tailored to your subjects, courses, or topics. 
-                        HazelNet lets you structure your study materials 
-                        in a way that fits your learning style.
-                    </MudText>
-                    <MudStack Spacing="2" Class="mt-4">
-    
-                        <div class="d-flex align-center">
-                            <MudIcon Icon="@Icons.Material.Filled.CheckCircle" 
-                                     Color="Color.Primary" 
-                                     Size="Size.Medium" 
-                                     Class="mr-3" />
-                            <MudText Typo="Typo.body1">Group flashcards by subject or topic</MudText>
-                        </div>
+        <MudStack Spacing="5">
+            
+            <!-- Create Decks-->
+            <MudGrid Spacing="4" Class="mt-5" AlignItems="AlignItems.Center">
+            
+                <MudItem xs="12" md="5">
+                    <MudStack Spacing="2">
+                        <MudText Typo="Typo.h3" GutterBottom="true">
+                            Create Decks
+                        </MudText>
+                        <MudText Typo="Typo.body1" Style="line-height: 1.5;">
+                            Organize your learning by creating custom decks
+                            tailored to your subjects, courses, or topics. 
+                            HazelNet lets you structure your study materials 
+                            in a way that fits your learning style.
+                        </MudText>
+                        <MudStack Spacing="2" Class="mt-4">
+        
+                            <div class="d-flex align-center">
+                                <MudIcon Icon="@Icons.Material.Filled.CheckCircle" 
+                                         Color="Color.Primary" 
+                                         Size="Size.Medium" 
+                                         Class="mr-3" />
+                                <MudText Typo="Typo.body1">Group flashcards by subject or topic</MudText>
+                            </div>
 
-                        <div class="d-flex align-center">
-                            <MudIcon Icon="@Icons.Material.Filled.CheckCircle" 
-                                     Color="Color.Primary" 
-                                     Size="Size.Medium" 
-                                     Class="mr-3" />
-                            <MudText Typo="Typo.body1">Easily rename, edit, or delete decks</MudText>
-                        </div>
+                            <div class="d-flex align-center">
+                                <MudIcon Icon="@Icons.Material.Filled.CheckCircle" 
+                                         Color="Color.Primary" 
+                                         Size="Size.Medium" 
+                                         Class="mr-3" />
+                                <MudText Typo="Typo.body1">Easily rename, edit, or delete decks</MudText>
+                            </div>
 
-                        <div class="d-flex align-center">
-                            <MudIcon Icon="@Icons.Material.Filled.CheckCircle" 
-                                     Color="Color.Primary" 
-                                     Size="Size.Medium" 
-                                     Class="mr-3" />
-                            <MudText Typo="Typo.body1">Keep your study materials organized</MudText>
-                        </div>
+                            <div class="d-flex align-center">
+                                <MudIcon Icon="@Icons.Material.Filled.CheckCircle" 
+                                         Color="Color.Primary" 
+                                         Size="Size.Medium" 
+                                         Class="mr-3" />
+                                <MudText Typo="Typo.body1">Keep your study materials organized</MudText>
+                            </div>
 
+                        </MudStack>
                     </MudStack>
-                </MudStack>
-            </MudItem>
+                </MudItem>
 
-            <MudItem xs="12" md="7">
-                <MudPaper Elevation="0" Class="d-flex align-center justify-center pa-4 mud-theme-primary" 
-                          Height="380px" Style= "border-radius: 12px;" >
-                    <MudImage Src="DeckCreation.png" Fluid="true" Alt="App Screenshot" ObjectFit="ObjectFit.Contain"/>
-                </MudPaper>
-            </MudItem>
+                <MudItem xs="12" md="7">
+                    <MudPaper Elevation="0" Class="d-flex align-center justify-center pa-4 mud-theme-primary" 
+                              Height="380px" Style= "border-radius: 12px; width: 100%;" >
+                        <MudImage Src="DeckCreation.png" Fluid="true" Alt="App Screenshot" 
+                                  ObjectFit="ObjectFit.Contain"
+                                  Style="max-height: 100%; width: auto;"/>
+                    </MudPaper>
+                </MudItem>
 
-        </MudGrid>
+            </MudGrid>
+            
+            <!-- Create Cards-->
+            <MudGrid Spacing="4" Class="mt-5" AlignItems="AlignItems.Center">
+                
+                <MudItem xs="12" md="7">
+                    <MudPaper Elevation="0" Class="d-flex align-center justify-center pa-4 mud-theme-primary"
+                              Height="380px" Style="border-radius: 12px; width: 100%">
+                        <MudImage Src="CardCreation.png" Fluid="true" Alt="App Screenshot" 
+                                  ObjectFit="ObjectFit.Contain" 
+                                  Style="max-height: 100%; width: auto;"/>
+                    </MudPaper>
+                </MudItem>
+
+                <MudItem xs="12" md="5">
+                    <MudStack Spacing="2">
+                        <MudText Typo="Typo.h3" GutterBottom="true">
+                            Create Cards
+                        </MudText>
+                        <MudText Typo="Typo.body1" Style="line-height: 1.5;">
+                            Build flashcards quickly and easily to capture key concepts, 
+                            definitions, and questions. HazelNet makes card creation 
+                            simple so you can focus more on learning and less on setup.
+                        </MudText>
+                        <MudStack Spacing="2" Class="mt-4">
+
+                            <div class="d-flex align-center">
+                                <MudIcon Icon="@Icons.Material.Filled.CheckCircle"
+                                         Color="Color.Primary"
+                                         Size="Size.Medium"
+                                         Class="mr-3"/>
+                                <MudText Typo="Typo.body1">Effortless add and edit flashcards</MudText>
+                            </div>
+
+                            <div class="d-flex align-center">
+                                <MudIcon Icon="@Icons.Material.Filled.CheckCircle"
+                                         Color="Color.Primary"
+                                         Size="Size.Medium"
+                                         Class="mr-3"/>
+                                <MudText Typo="Typo.body1">Use clear question-and-answer formats</MudText>
+                            </div>
+
+                            <div class="d-flex align-center">
+                                <MudIcon Icon="@Icons.Material.Filled.CheckCircle"
+                                         Color="Color.Primary"
+                                         Size="Size.Medium"
+                                         Class="mr-3"/>
+                                <MudText Typo="Typo.body1">Designed for effective spaced and repetition learning</MudText>
+                            </div>
+
+                        </MudStack>
+                    </MudStack>
+                </MudItem>
+
+            </MudGrid>
+            
+            <!-- Check you stats-->
+            <MudGrid Spacing="4" Class="mt-5" AlignItems="AlignItems.Center">
+            
+                <MudItem xs="12" md="5">
+                    <MudStack Spacing="2">
+                        <MudText Typo="Typo.h3" GutterBottom="true">
+                            Check your Stats
+                        </MudText>
+                        <MudText Typo="Typo.body1" Style="line-height: 1.5;">
+                            Track your learning progress with detailed statistics 
+                            and insights. HazelNet helps you understand your strengths, 
+                            identify difficult topics, and improve your study habits over time.
+                        </MudText>
+                        <MudStack Spacing="2" Class="mt-4">
+        
+                            <div class="d-flex align-center">
+                                <MudIcon Icon="@Icons.Material.Filled.CheckCircle" 
+                                         Color="Color.Primary" 
+                                         Size="Size.Medium" 
+                                         Class="mr-3" />
+                                <MudText Typo="Typo.body1">View study progress and recall accuracy</MudText>
+                            </div>
+
+                            <div class="d-flex align-center">
+                                <MudIcon Icon="@Icons.Material.Filled.CheckCircle" 
+                                         Color="Color.Primary" 
+                                         Size="Size.Medium" 
+                                         Class="mr-3" />
+                                <MudText Typo="Typo.body1">Monitor review history and study patterns</MudText>
+                            </div>
+
+                            <div class="d-flex align-center">
+                                <MudIcon Icon="@Icons.Material.Filled.CheckCircle" 
+                                         Color="Color.Primary" 
+                                         Size="Size.Medium" 
+                                         Class="mr-3" />
+                                <MudText Typo="Typo.body1">Identify topics that need more practice</MudText>
+                            </div>
+
+                        </MudStack>
+                    </MudStack>
+                </MudItem>
+
+                <MudItem xs="12" md="7">
+                    <MudPaper Elevation="0" Class="d-flex align-center justify-center pa-4 mud-theme-primary" 
+                              Height="380px" Style= "border-radius: 12px; width: 100%" >
+                        <MudImage Src="Stats.jpg" Fluid="true" Alt="App Screenshot" 
+                                  ObjectFit="ObjectFit.Contain"
+                                  Style="max-height: 100%; width: auto;"/>
+                    </MudPaper>
+                </MudItem>
+
+            </MudGrid>
+        
+        </MudStack>
+
+        
     </MudContainer>
+    
+   
 
-    </MudContainer>
+</MudContainer>
 

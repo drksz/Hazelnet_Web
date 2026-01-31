@@ -7,7 +7,7 @@ public class Analysis
     //ratio of score and total reviews
     public double RecallAccuracy(Card card)
     {
-        return (card.Reps - card.Lapses) / (double)card.Lapses;
+        return (card.Reps - card.Lapses) / (double)card.Reps;
     }
 
     //average difficulty from review history

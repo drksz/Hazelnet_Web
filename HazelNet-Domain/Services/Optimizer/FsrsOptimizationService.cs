@@ -3,6 +3,16 @@ using HazelNet_Domain.Models;
 
 namespace HazelNet.Services.Optimizer;
 
+<<<<<<< HEAD
+=======
+//an "API" service for optimizing FSRS weights.
+
+//usage: 
+//var optimizer = new FsrsOptimizationService();
+//var trainedWeights = optimizer.OptimizeWeights(reviewHistories);
+
+//we can also modify the hyperparams, but defaults are reasonable so only use that.
+>>>>>>> master
 public class FsrsOptimizationService
 {
     private readonly FsrsDataProcessor _processor;

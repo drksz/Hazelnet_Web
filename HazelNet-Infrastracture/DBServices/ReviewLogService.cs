@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 using HazelNet_Domain.Models;
 using HazelNet_Infrastracture.DBContext;
 
@@ -8,9 +8,9 @@ namespace HazelNet_Infrastracture.DBServices;
 
 public class ReviewLogService
 {
-    private readonly HazelNetDbContext _context;
+    private readonly ApplicationDbContext _context;
 
-    public ReviewLogService(HazelNetDbContext context)
+    public ReviewLogService(ApplicationDbContext context)
     {
         _context = context;
     }

@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 using HazelNet_Domain.Models;
 using HazelNet_Infrastracture.DBContext;
 
@@ -8,9 +8,9 @@ namespace HazelNet_Infrastracture.DBServices;
 
 public class DeckService
 {
-    private readonly HazelNetDbContext _context;
+    private readonly ApplicationDbContext _context;
 
-    public DeckService(HazelNetDbContext context)
+    public DeckService(ApplicationDbContext context)
     {
         _context = context;
     }
@@ -56,7 +56,7 @@ public class DeckService
         }
     }
 
-    public async Task<List<Deck>> GetCardsByDeckIdAsync(int deckId)
+    public async Task<List<Card>> GetCardsByDeckIdAsync(int deckId)
     {
         return await _context.Cards
             .Where(c => c.DeckId == deckId)

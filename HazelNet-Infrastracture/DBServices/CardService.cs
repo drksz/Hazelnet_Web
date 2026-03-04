@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 using HazelNet_Domain.Models;
 using HazelNet_Infrastracture.DBContext;
 
@@ -8,14 +8,14 @@ namespace HazelNet_Infrastracture.DBServices;
 
 public class CardService
 {
-    private readonly HazelNetDbContext _context;
+    private readonly ApplicationDbContext _context;
 
-    public CardService(HazelNetDbContext context)
+    public CardService(ApplicationDbContext context)
     {
         _context = context;
     }
 
-    public async <Task<List<Card>>> GetAllCardsAsync()
+    public async Task<List<Card>> GetAllCardsAsync()
     {
         return await _context.Cards.ToListAsync();
     }
@@ -48,5 +48,11 @@ public class CardService
         }
     }
 
+    public async Task<ReviewHistory> GetReviewHistoryByCardIdAsync(int cardId)
+    {
+        return await _context.ReviewHistory
+            .Include(rh => rh.ReviewLogs) // Include related review logs
+            .FirstOrDefaultAsync(rh => rh.CardId == cardId);
+    }
 
 }

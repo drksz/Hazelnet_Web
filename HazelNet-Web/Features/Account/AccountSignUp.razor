@@ -23,14 +23,14 @@
     <MudGrid Spacing="0" Justify="Justify.Center" Class="flex-grow-1">
 
         <MudItem xs="12" md="5"  Class="d-flex justify-center align-center">
-            <MudPaper Class="pa-15 ma-2 flex-grow-1" Outlined="false" Elevation="0">
+            <MudPaper Class="pa-15 ma-2 flex-grow-1" Outlined="false" Elevation="0" Style="background: var(--mud-palette-background);">
 
                 <MudStack>
                     <MudText Typo="Typo.h1" Color="Color.Default" Align="Align.Center">
                         Registration
                     </MudText>
                     
-                    <MudCard Elevation="0">
+                    <MudCard Elevation="0" Style="background: var(--mud-palette-background);">
                         <MudCardContent>
                             <MudTextField Label="Username" HelperText="Max. 30 characters"
                                           @bind-Value="model.Username" For="@(() => model.Username)"

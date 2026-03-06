@@ -48,14 +48,14 @@
 
 
         <MudItem xs="12" md="5" Class="d-flex justify-center align-center">
-            <MudPaper Class="pa-16 ma-2 flex-grow-1" Outlined="false" Elevation="0">
+            <MudPaper Class="pa-16 ma-2 flex-grow-1" Outlined="false" Elevation="0" Style="background: var(--mud-palette-background);">
 
                 <MudStack>
                     <MudText Typo="Typo.h1" Color="Color.Default" Align="Align.Center">
                         Login
                     </MudText>
 
-                    <MudCard Elevation="0">
+                    <MudCard Elevation="0" Style="background: var(--mud-palette-background);">
                         <MudCardContent>
                             <MudTextField Label="Email" HelperText="Enter your username"
                                           @bind-Value="model.Email" For="@(() => model.Email)"

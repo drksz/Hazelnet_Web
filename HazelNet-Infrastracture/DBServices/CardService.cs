@@ -26,11 +26,6 @@ public class CardService
             .FirstOrDefaultAsync(c => c.Id == cardId);
     }
 
-    public async Task AddCardAsync(Card card)
-    {
-        _context.Cards.Add(card);
-        await _context.SaveChangesAsync();
-    }
 
     public async Task UpdateCardAsync(Card card)
     {
@@ -60,6 +55,7 @@ public class CardService
         var card = await _context.Cards.FindAsync(cardId);
         if (card != null)
         {
+            reviewHistory.Id = cardId; //1:1 
             reviewHistory.CardId = cardId; // Set the foreign key
             reviewHistory.Card = card; // Set the navigation property
             _context.ReviewHistory.Add(reviewHistory);

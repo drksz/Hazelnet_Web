@@ -34,15 +34,7 @@ public class ReviewHistoryService
         await _context.SaveChangesAsync();
     }
 
-    public async Task DeleteReviewHistoryAsync(int reviewHistoryId)
-    {
-        var reviewHistory = await _context.ReviewHistory.FindAsync(reviewHistoryId);
-        if (reviewHistory != null)
-        {
-            _context.ReviewHistory.Remove(reviewHistory);
-            await _context.SaveChangesAsync();
-        }
-    }
+
 
     public async Task<List<ReviewLog>> GetReviewLogsByReviewHistoryIdAsync(int reviewHistoryId)
     {

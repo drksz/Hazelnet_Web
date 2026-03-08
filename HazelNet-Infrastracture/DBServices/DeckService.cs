@@ -20,7 +20,7 @@ public class DeckService
         return await _context.Decks.ToListAsync();
     }
 
-    public async Task<Deck> GetDeckByIdAsync(int deckId)
+    public async Task<Deck?> GetDeckByIdAsync(int deckId)
     {
         return await _context.Decks
             .Include(d => d.Cards) // Include related cards

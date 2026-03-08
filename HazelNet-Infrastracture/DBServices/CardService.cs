@@ -43,7 +43,7 @@ public class CardService
         }
     }
 
-    public async Task<ReviewHistory> GetReviewHistoryByCardIdAsync(int cardId)
+    public async Task<ReviewHistory?> GetReviewHistoryByCardIdAsync(int cardId)
     {
         return await _context.ReviewHistory
             .Include(rh => rh.ReviewLogs) // Include related review logs

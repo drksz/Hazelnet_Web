@@ -1,3 +1,4 @@
+using System.Security.Claims;
 using HazelNet_Application.Auth;
 using HazelNet_Application.Interface;
 using HazelNet_Infrastracture.Command;
@@ -8,7 +9,11 @@ using HazelNet_Web.Features.Account;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Components.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Metadata.Internal;
+
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -31,7 +36,10 @@ builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationSc
         opt.ExpireTimeSpan = TimeSpan.FromMinutes(45);
     });
 
+builder.Services.AddAuthorization();
 builder.Services.AddCascadingAuthenticationState();
+
+
 
 builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<IPasswordHasher, PasswordHasher>();
@@ -58,11 +66,13 @@ if (!app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
-app.UseAntiforgery();
 app.MapStaticAssets();
 
 app.UseAuthentication();
 app.UseAuthorization();
+app.UseAntiforgery();     
+
+
 
 //Form Post for login and auth validation
 //Implement later
@@ -83,24 +93,65 @@ app.MapPost("/register", async (
 
 app.MapPost("/login", async (
     HttpContext httpContext,
-    LoginHandler handler,
-    Login.RegisterAccountForm model) =>
+    [FromServices]LoginHandler handler,
+    [FromForm] string email,
+    [FromForm] string password) =>
 {
     
-    var command = new LoginHandler.LoginQuery(model.Email, model.Password);
+    var command = new LoginHandler.LoginQuery(email, password);
     var result = await handler.Handle(command);
 
     if (result.Success)
-        return Results.Ok(new { success = true });
-    else
-        return Results.BadRequest(new { error = "Wrong credentials" });
+    {
+        var claims = new List<Claim>
+        {
+            new Claim(ClaimTypes.Name, email),
+            new Claim(ClaimTypes.Role, "User")
+        };
+        
+        var claimsIdentity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
+        
+
+        await httpContext.SignInAsync(
+            CookieAuthenticationDefaults.AuthenticationScheme,
+            new ClaimsPrincipal(claimsIdentity),
+            new AuthenticationProperties
+            {
+                AllowRefresh = true,
+                // Refreshing the authentication session should be allowed.
+
+                //ExpiresUtc = DateTimeOffset.UtcNow.AddMinutes(10),
+                // The time at which the authentication ticket expires. A 
+                // value set here overrides the ExpireTimeSpan option of 
+                // CookieAuthenticationOptions set with AddCookie.
+
+                IsPersistent = true,
+                // Whether the authentication session is persisted across 
+                // multiple requests. When used with cookies, controls
+                // whether the cookie's lifetime is absolute (matching the
+                // lifetime of the authentication ticket) or session-based.
+
+                //IssuedUtc = <DateTimeOffset>,
+                // The time at which the authentication ticket was issued.
+
+                //RedirectUri = <string>
+                // The full path or absolute URI to be used as an http 
+                // redirect response value.
+            });
+
+
+        return Results.Redirect("/counter");
+    }
+    else 
+        return Results.Redirect("/login?error=true");
 });
 
 
-app.MapGet("/logout", async (HttpContext HttpContext) =>
+app.MapGet("/logout", async (HttpContext httpContext) =>
 {
-    await HttpContext.SignOutAsync();
-    return Results.Redirect("/login");
+    await httpContext.SignOutAsync(
+        CookieAuthenticationDefaults.AuthenticationScheme);
+    return Results.Redirect("/");
 });
 
 app.MapRazorComponents<App>()

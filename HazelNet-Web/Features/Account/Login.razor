@@ -5,14 +5,18 @@
 
 @inject HttpClient Http
 @inject NavigationManager Navigation
+@inject ISnackbar Snackbar
 
 <PageTitle>Account Login</PageTitle>
 
+@if (HasRegistrationSuccess)
+{
+    TriggerSuccessSnackbar("Account created! Please log in.");
+}
+
 @if (HasError)
 {
-    <MudAlert Severity="Severity.Error" Class="mb-4">
-        Wrong credentials.
-    </MudAlert>
+    TriggerErrorSnackbar("Wrong Credentials. Try Again.");
 }
 
 <form action="/login" method="post" data-enhance="false">
@@ -100,10 +104,35 @@
 
 </form>
 
+
+
+
 @code {
     // Read the query parameter set by the failed API redirect
     [SupplyParameterFromQuery(Name = "error")]
     public string? ErrorParam { get; set; }
     
+    [SupplyParameterFromQuery(Name = "success")]
+    public string? RegistrationSuccessParam { get; set; }
+    
     private bool HasError => !string.IsNullOrEmpty(ErrorParam);
+    private bool HasRegistrationSuccess => !string.IsNullOrEmpty(RegistrationSuccessParam);
+
+    private void TriggerSuccessSnackbar(string message)
+    {
+        Snackbar.Configuration.PositionClass = Defaults.Classes.Position.TopRight;
+        Snackbar.Add(message, Severity.Success, config =>
+        {
+            config.ShowCloseIcon = true;
+        });
+    }
+    
+    private void TriggerErrorSnackbar(string message)
+    {
+        Snackbar.Configuration.PositionClass = Defaults.Classes.Position.TopRight;
+        Snackbar.Add(message, Severity.Error, config =>
+        {
+            config.ShowCloseIcon = true;
+        });
+    }
 }

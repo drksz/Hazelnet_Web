@@ -35,9 +35,7 @@
 
 
   <ItemGroup>
-    <AdditionalFiles Include="Features\Counter.razor" />
     <AdditionalFiles Include="Features\Error.razor" />
-    <AdditionalFiles Include="Features\Weather.razor" />
     <AdditionalFiles Include="Shared\Layout\MainLayout.razor" />
     <AdditionalFiles Include="Shared\Layout\NavMenu.razor" />
   </ItemGroup>

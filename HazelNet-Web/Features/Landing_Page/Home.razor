@@ -23,19 +23,61 @@
         Create decks, study using spaced repetition, and track progress across devices.
     </MudText>
 
-    <div class="d-flex justify-center gap-4 mb-16">
+    <div class="d-flex justify-center gap-4 mb-8">
         <MudButton Variant="Variant.Filled" Color="Color.Primary" Size="Size.Large"
                    Style="border-radius: 16px; font-weight: 700; text-transform: none;" DisableElevation="true">
             Start Studying
         </MudButton>
-        <MudButton Variant="Variant.Outlined" Color="Color.Default" Size="Size.Large" Class=" px-8 py-4"
-                   Style="border-radius: 16px; font-weight: 700; text-transform: none;">
-            Browse Public Decks
+        <MudButton Variant="Variant.Text" Color="Color.Default" Size="Size.Large" Class=" px-8 py-4"
+                   Style="border-radius: 16px; font-weight: 600; text-transform: none;"
+                   StartIcon="@Icons.Material.Filled.CheckCircleOutline">
+            See how it works
         </MudButton>
     </div>
+    
+    <MudDivider/>
+    
+    <MudStack Row="true" Spacing="5" Class="ma-1"
+              AlignItems="AlignItems.Center" Justify="Justify.Center">
+        <MudCard Elevation="0" Style="background: transparent">
+            <MudCardContent>
+                <MudText Typo="Typo.h2" Color="Color.Info">
+                    90%
+                </MudText>
+                <MudText Typo="Typo.caption">
+                    RETENTION RATE
+                </MudText>
+            </MudCardContent>
+        </MudCard>
+        
+        <MudCard Elevation="0" Style="background: transparent">
+            <MudCardContent>
+                <MudText Typo="Typo.h2" Color="Color.Info">
+                    3x
+                </MudText>
+                <MudText Typo="Typo.caption">
+                    FASTER LEARNING
+                </MudText>
+            </MudCardContent>
+        </MudCard>
+        
+        <MudCard Elevation="0" Style="background: transparent">
+            <MudCardContent>
+                <MudText Typo="Typo.h2" Color="Color.Info">
+                    20-30%
+                </MudText>
+                <MudText Typo="Typo.caption">
+                    WORKLOAD REDUCTION
+                </MudText>
+            </MudCardContent>
+        </MudCard>
+    </MudStack>
+    
+    <MudDivider/>
+    
 
     <!-- Learning Model -->
-    <MudContainer MaxWidth="MaxWidth.Medium" Class="pa-5">
+    <MudContainer MaxWidth="MaxWidth.Medium" Class="mt-5 pa-5">
         
         <div class="d-flex flex-column align-center mb-10">
             <MudText Typo="Typo.overline" Color="Color.Primary">

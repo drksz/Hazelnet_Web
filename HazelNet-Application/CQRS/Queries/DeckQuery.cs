@@ -13,3 +13,19 @@ public class GetDeckByIdQuery : IQuery<Deck>
         DeckId = deckId;
     }
 }
+
+public class GetDeckByIdQueryHandler : IQueryHandler<GetDeckByIdQuery, Deck>
+{
+    private readonly IDeckRepository _deckRepository;
+
+    public GetDeckByIdQueryHandler(IDeckRepository deckRepository)
+    {
+        _deckRepository = deckRepository;
+    }
+
+    public async Task<Deck> Handle(GetDeckByIdQuery query)
+    {
+        var deck = await _deckRepository.Get(query.DeckId);
+        return deck ?? throw new InvalidOperationException($"Deck with id {query.DeckId} not found.");
+    }
+}

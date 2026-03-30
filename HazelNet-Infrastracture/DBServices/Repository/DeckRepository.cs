@@ -2,6 +2,8 @@ using HazelNet_Domain.Models;
 using HazelNet_Domain.IRepository;
 using HazelNet_Infrastracture.DBContext;
 using Microsoft.EntityFrameworkCore;
+using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace HazelNet_Infrastracture.DBServices.Repository;
 public class DeckRepository : IDeckRepository
@@ -18,6 +20,13 @@ public class DeckRepository : IDeckRepository
         return await _context.Decks.FindAsync(deckId);
     }
 
+
+    public async Task<List<Deck>> GetDeckByUserId(int userId)
+    {
+        return await _context.Decks
+            .Where(d => d.UserId == userId)
+            .ToListAsync();
+    }
     public async Task Update(Deck deck)
     {
         _context.Decks.Update(deck);

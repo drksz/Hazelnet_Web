@@ -19,6 +19,12 @@ public class ReviewHistoryRepository : IReviewHistoryRepository
         return await _context.ReviewHistory.FindAsync(reviewHistoryId);
     }
 
+    public async Task<ReviewHistory?> GetReviewHistoryByCardId(int cardId)
+    {
+        return await _context.ReviewHistory
+            .FirstOrDefaultAsync(rh => rh.CardId == cardId);
+    }
+
     public async Task Update(ReviewHistory reviewHistory)
     {
         _context.ReviewHistory.Update(reviewHistory);

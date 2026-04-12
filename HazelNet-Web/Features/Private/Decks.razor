@@ -1,11 +1,16 @@
 ﻿@page "/decks"
 
 @using HazelNet_Domain.Models
-
 @using Microsoft.AspNetCore.Authorization
 @using System.Security.Claims
+@using HazelNet_Application.CQRS.Features.Decks.Queries
+@using HazelNet_Application.DBServices.Abstractions
+@using HazelNet_Web.ViewModel
 @using Microsoft.AspNetCore.Components.Authorization
+
 @inject AuthenticationStateProvider AuthenticationStateProvider
+@inject IQueryHandler<GetDecksQuery, List<DeckViewModel>> GetDecksHandler
+
 @attribute [Authorize]
 
 
@@ -55,7 +60,7 @@
         
         <MudStack Spacing="0" >
             <MudText Typo="Typo.h3" Color="Color.Error">
-                @_dueToday
+                @_ToTaldueToday
             </MudText>
             <MudText Typo="Typo.body1">
                 Due today
@@ -97,73 +102,17 @@
 
     </MudGrid>
     
-   
+   <!-- Card Component-->
     <MudGrid Spacing="5" Justify="Justify.Center" Class="mt-5 px-20">
 
         @foreach (var deck in _deckList)
         {
             <MudItem sm="12" md="4" lg="3" Class="d-flex">
-                <MudCard Outlined="true" Elevation="10" 
-                         Style="background: transparent; min-height: 150px; width: 100%; display: flex; flex-direction: column;">
-                    <MudCardHeader>
-                        <CardHeaderContent>
-                            <MudText Align="Align.Left" Typo="Typo.h5">
-                                @deck.Name
-                            </MudText>
-                        </CardHeaderContent>
-                        <CardHeaderActions>
-                            <MudIconButton Icon="@Icons.Material.Filled.MoreHoriz"
-                                           Color="Color.Default" />
-                        </CardHeaderActions>
-                    </MudCardHeader>
-
-                    <MudCardContent Style="flex-grow: 1;">
-                        <MudText Typo="Typo.body1">
-                            @deck.Description
-                        </MudText>
-                        <MudProgressLinear Color="Color.Info" Value="@deck.MasteredPercentage"
-                                           Class="mt-5" Size="Size.Medium" Rounded="true" />
-                        
-                        <MudGrid Spacing="5" Class="d-flex justify-space-between mb-5" >
-                            <MudItem>
-                                <MudText Typo="Typo.caption">
-                                    @deck.MasteredCards/@deck.TotalNumberOfCards
-                                </MudText>
-                            </MudItem>
-                            
-                            <MudItem>
-                                <MudText Typo="Typo.caption">
-                                    @deck.MasteredPercentage%
-                                </MudText>
-                            </MudItem>
-                        </MudGrid>
-                        
-                        <MudDivider/>
-                        
-                        <MudStack Row="true" Spacing="5" Class="d-flex justify-space-between mt-5" AlignItems="AlignItems.Center" >
-                            <MudItem>
-                                <MudText Typo="Typo.body2">
-                                    @GetRelativeTime(deck.LastDateAccessed)
-                                </MudText>
-                            </MudItem>
-                            <MudChip T="int" Color="Color.Error" Size="Size.Small">
-                                @_dueToday due
-                            </MudChip>
-                        </MudStack>
-                        
-                        <MudButton Variant="Variant.Filled" Color="Color.Primary" 
-                                   Size="Size.Medium" FullWidth="true"
-                                   Class="my-5">
-                            Study Now
-                        </MudButton>
-                        
-                    </MudCardContent>
-                </MudCard>
+                <DeckView Deck="deck" />
             </MudItem>
         }
 
     </MudGrid>
-    
     
     
 </MudContainer>
@@ -171,46 +120,7 @@
 @code {
     
     //Sample Deck Data
-    public List<Deck> decks = new List<Deck>
-    {
-        new Deck
-        {
-            Id = 1,
-            DeckName = "System Architecture",
-            DeckDescription = "Core concepts of distributed systems and microservices.",
-            CreationDate = new DateTime(2026, 1, 10),
-            LastAcess = DateTime.Now.AddHours(-2),
-            UserId = 4
-        },
-        new Deck
-        {
-            Id = 2,
-            DeckName = "Rust Fundamentals",
-            DeckDescription = "Memory safety, borrowing, and lifetimes.",
-            CreationDate = new DateTime(2026, 3, 5),
-            LastAcess = DateTime.Now.AddDays(-1),
-            UserId = 4
-        },
-        new Deck
-        {
-            Id = 3,
-            DeckName = "Advanced .NET Features",
-            DeckDescription = null, 
-            CreationDate = new DateTime(2025, 11, 20),
-            LastAcess = DateTime.Now.AddDays(-15),
-            UserId = 4
-        },
-        new Deck
-        {
-            Id = 4,
-            DeckName = "LeetCode Problems",
-            DeckDescription = "A collection of leetcode problems and solution", 
-            CreationDate = new DateTime(2025, 11, 20),
-            LastAcess = DateTime.Now.AddDays(-25),
-            UserId = 4
-        }
-    };
-
+    
     
     private List<DeckViewModel> _deckList = new();
     
@@ -228,7 +138,7 @@
     
     private int _numOfDecks;
     private int _totalCards;
-    private int _dueToday;
+    private int _ToTaldueToday;
     private int _completedDecks;
 
     
@@ -247,59 +157,13 @@
                 _userId = user.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
             }
 
-            _deckList = MakeDeckToViewModel(decks);
+            _deckList = await GetDecksHandler.Handle(new GetDecksQuery());
             _numOfDecks = _deckList.Count;
         }
     }
     
     
-
-
-    public class DeckViewModel
-    {
-        public string Name;
-        public string? Description;
-        public int TotalNumberOfCards = 0;
-        public DateTime LastDateAccessed;
-        
-        //I need a function for the following 
-        public int MasteredCards = 0;
-        public double MasteredPercentage = 0.0;
-        public int? NumOfDueCards = 0;
-        
-        
-        public DeckViewModel(Deck _deck)
-        {
-            Name = _deck.DeckName;
-            Description = _deck.DeckDescription;
-            TotalNumberOfCards = _deck.Cards.Count;
-            LastDateAccessed = _deck.LastAcess;
-        }
-    }
-
-    private List<DeckViewModel> MakeDeckToViewModel(List<Deck> decks)
-    {
-        var deckList = new List<DeckViewModel>();
-        foreach (var deck in decks)
-        {
-            DeckViewModel d = new(deck);
-            deckList.Add(d);
-        }
-
-        return deckList;
-    }
     
-    private string GetRelativeTime(DateTime date)
-    {
-        var diff = DateTime.Now - date;
-
-        if (diff.TotalMinutes < 1)    return "Just now";
-        if (diff.TotalMinutes < 60)   return $"{(int)diff.TotalMinutes} minutes ago";
-        if (diff.TotalHours < 24)     return $"{(int)diff.TotalHours} hours ago";
-        if (diff.TotalDays < 7)       return $"{(int)diff.TotalDays} days ago";
-        if (diff.TotalDays < 30)      return $"{(int)(diff.TotalDays / 7)} weeks ago";
-        if (diff.TotalDays < 365)     return $"{(int)(diff.TotalDays / 30)} months ago";
-
-        return $"{(int)(diff.TotalDays / 365)} years ago";
-    }
+    
+    
 }

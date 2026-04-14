@@ -110,6 +110,19 @@
    <!-- Card Component-->
     <MudGrid Spacing="5" Justify="Justify.Center" Class="mt-5 px-20">
 
+        @if (_NumOfDecks == 0)
+        {
+            <MudStack Spacing="3" Class="ma-10 pa-10"
+                      AlignItems="AlignItems.Center" Justify="Justify.Center">
+                <MudText Typo="Typo.h2" Color="Color.Primary">
+                    No decks yet.
+                </MudText>
+                <MudText Typo="Typo.body1">
+                    Create your first deck to start studying.
+                </MudText>    
+            </MudStack>
+            
+        }
         @foreach (var deck in _DeckList)
         {
             <MudItem sm="12" md="4" lg="3" Class="d-flex">

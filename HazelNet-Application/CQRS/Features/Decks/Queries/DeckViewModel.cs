@@ -4,6 +4,7 @@ namespace HazelNet_Web.ViewModel;
 
 public class DeckViewModel
 {
+    public int Id { get; set; }
     public string Name;
     public string? Description;
     public int TotalNumberOfCards = 0;

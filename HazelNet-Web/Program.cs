@@ -2,6 +2,7 @@ using System.Security.Claims;
 using HazelNet_Application.Auth;
 using HazelNet_Application.CQRS.Abstractions;
 using HazelNet_Application.CQRS.Abstractions.Identity;
+using HazelNet_Application.CQRS.Features.Cards.Commands;
 using HazelNet_Application.CQRS.Features.Decks.Commands;
 using HazelNet_Application.CQRS.Features.Decks.Queries;
 using HazelNet_Application.Interface;
@@ -62,6 +63,7 @@ builder.Services.AddScoped<IQueryHandler<GetDecksQuery, List<DeckViewModel>>, Ge
 builder.Services.AddScoped<ICommandHandler<CreateDeckCommand, int>, CreateDeckCommandHandler>();
 builder.Services.AddScoped<ICommandHandler<DeleteDeckCommand>, DeleteDeckCommandHandler>();
 builder.Services.AddScoped<ICommandHandler<UpdateDeckCommand>, UpdateDeckCommandHandler>();
+builder.Services.AddScoped<ICommandHandler<CreateCardCommand, int>, CreateCardCommandHandler>();
 
 
 builder.Services.AddHttpClient("LocalApi", (sp, client) =>

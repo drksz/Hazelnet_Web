@@ -1,0 +1,201 @@
+﻿@using HazelNet_Application.CQRS.Abstractions
+@using HazelNet_Application.CQRS.Features.Decks.Commands
+@using HazelNet_Web.ViewModel
+
+@inject ICommandHandler<DeleteDeckCommand> DeleteDeckCommandHandler
+@inject ISnackbar Snackbar
+@inject IDialogService DialogService
+@inject ICommandHandler<UpdateDeckCommand> UpdateDeckHandler
+
+<MudCard Elevation="10" 
+                         Style=" min-height: 150px; width: 100%; 
+                         display: flex; flex-direction: column; border: 120px">
+                    <MudCardHeader>
+                        <CardHeaderContent>
+                            <MudText Align="Align.Left" Typo="Typo.h5">
+                                @Deck.Name
+                            </MudText>
+                        </CardHeaderContent>
+                    </MudCardHeader>
+
+                    <MudCardContent Class="d-flex flex-column">
+                        <MudText Typo="Typo.body2" Style="overflow-wrap: break-word; word-break: break-word;">
+                            @Deck.Description
+                        </MudText>
+                        <MudProgressLinear Color="Color.Info" Value="@Deck.MasteredPercentage"
+                                           Class="mt-5" Size="Size.Medium" Rounded="true" />
+                        
+                        <MudGrid Spacing="5" Class="d-flex justify-space-between mb-auto" >
+                            <MudItem>
+                                <MudText Typo="Typo.caption">
+                                    @Deck.MasteredCards/@Deck.TotalNumberOfCards
+                                </MudText>
+                            </MudItem>
+                            
+                            <MudItem>
+                                <MudText Typo="Typo.caption">
+                                    @Deck.MasteredPercentage%
+                                </MudText>
+                            </MudItem>
+                        </MudGrid>
+                        
+                        <MudDivider/>
+                        
+                        <MudStack Row="true" Spacing="5" Class="d-flex justify-space-between my-5" AlignItems="AlignItems.Center" >
+                            <MudItem>
+                                <MudText Typo="Typo.body2">
+                                    @GetRelativeTime(Deck.LastDateAccessed)
+                                </MudText>
+                            </MudItem>
+                            <MudChip T="int" Color="Color.Error" Size="Size.Small">
+                                @_dueToday due
+                            </MudChip>
+                        </MudStack>
+                        
+                        <MudGrid Justify="Justify.Center" Class="align-content-center" Spacing="2"> 
+                            <MudItem sm="10" Class="my-auto mx-auto">
+                                <MudButton Variant="Variant.Filled" Color="Color.Primary" 
+                                           Size="Size.Medium" FullWidth="true">
+                                    Study Now
+                                </MudButton>
+                            </MudItem>
+    
+                            <MudItem sm="2" Class="my-auto mx-auto">
+                                <MudFabMenu StartIcon="@Icons.Material.Filled.Edit"
+                                            Color="Color.Default"
+                                            Size="Size.Small"
+                                            DropShadow="false"
+                                            OpenOnMouseHover="false"
+                                            CloseOnMenuItemClicked="true"
+                                            DampenItemsBackgroundColor="false">
+                                    
+                                    
+                                    <MudFabMenuItem Label="Delete"
+                                                    StartIcon="@Icons.Material.Filled.Delete"
+                                                    Size="Size.Medium"
+                                                    Color="Color.Error"
+                                                    OnClick="@DeleteDeck"/>
+                                    
+                                    <MudFabMenuItem Label="Clear"
+                                                    StartIcon="@Icons.Material.Filled.ClearAll"
+                                                    Size="Size.Medium"
+                                                    Color="Color.Dark"/>
+                                    
+                                    <MudFabMenuItem Label="Edit"
+                                                    StartIcon="@Icons.Material.Filled.Edit"
+                                                    Size="Size.Medium"
+                                                    Color="Color.Dark"
+                                                    OnClick="@EditDeck"/>
+                                    <MudFabMenuItem Label="Manage Cards"
+                                                    StartIcon="@Icons.Material.Filled.AddCard"
+                                                    Size="Size.Medium"
+                                                    Color="Color.Info"
+                                                    Style="white-space: nowrap;"/>
+                                </MudFabMenu>
+                            </MudItem>
+                        </MudGrid>
+                        
+                    </MudCardContent>
+                </MudCard>
+                
+                
+
+@code {
+
+    [Parameter] public DeckViewModel Deck { get; set; }
+    [Parameter] public EventCallback<int> OnDeckDeleted { get; set; }
+    [Parameter] public EventCallback<UpdateDeckCommand> OnDeckUpdated { get; set; }
+
+    private int _dueToday = 0;
+
+    private string GetRelativeTime(DateTime date)
+    {
+        var diff = DateTime.UtcNow - date;
+
+        if (diff.TotalMinutes < 1)    return "Just now";
+        if (diff.TotalMinutes < 60)   return $"{(int)diff.TotalMinutes} minutes ago";
+        if (diff.TotalHours < 24)     return $"{(int)diff.TotalHours} hours ago";
+        if (diff.TotalDays < 7)       return $"{(int)diff.TotalDays} days ago";
+        if (diff.TotalDays < 30)      return $"{(int)(diff.TotalDays / 7)} weeks ago";
+        if (diff.TotalDays < 365)     return $"{(int)(diff.TotalDays / 30)} months ago";
+
+        return $"{(int)(diff.TotalDays / 365)} years ago";
+    }
+
+    private async Task EditDeck()
+    {
+        try
+        {
+            var parameters = new DialogParameters
+            {
+                ["InitialName"] = Deck.Name,
+                ["InitialDescription"] = Deck.Description,
+                ["DeckId"] = Deck.Id
+            };
+            
+            var options = new DialogOptions
+            {
+                MaxWidth = MaxWidth.Small,
+                FullWidth = true,
+                CloseButton = true,
+                CloseOnEscapeKey = true,
+                Position = DialogPosition.Center
+            };
+            
+            var dialog = await DialogService.ShowAsync<CreateDeckDialog>(
+                "Edit Deck", parameters, options);
+
+            var result = await dialog.Result;
+
+            if (!result.Canceled && result.Data is UpdateDeckCommand command)
+            {
+                await UpdateDeckHandler.Handle(command);
+
+                Snackbar.Add("Deck updated!", Severity.Success);
+
+                // Notify parent
+                await OnDeckUpdated.InvokeAsync(command);
+            }
+        }
+        catch (UnauthorizedAccessException ex)
+        {
+            Snackbar.Add(ex.Message, Severity.Warning);
+        }
+        catch (KeyNotFoundException ex)
+        {
+            Snackbar.Add(ex.Message, Severity.Error);
+        }
+        catch (Exception)
+        {
+            Snackbar.Add("An error occurred while deleting the deck.", Severity.Error);
+        }
+    }
+
+    private async Task DeleteDeck()
+    {
+        try
+        {
+            var command = new DeleteDeckCommand (Deck.Id);
+        
+            await DeleteDeckCommandHandler.Handle(command);
+        
+            Snackbar.Add($"{Deck.Name} deleted successfully", Severity.Success);
+        
+            
+            await OnDeckDeleted.InvokeAsync(Deck.Id);
+            
+        }
+        catch (UnauthorizedAccessException ex)
+        {
+            Snackbar.Add(ex.Message, Severity.Warning);
+        }
+        catch (KeyNotFoundException ex)
+        {
+            Snackbar.Add(ex.Message, Severity.Error);
+        }
+        catch (Exception)
+        {
+            Snackbar.Add("An error occurred while deleting the deck.", Severity.Error);
+        }
+    }
+}

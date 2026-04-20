@@ -7,6 +7,7 @@
 @using HazelNet_Application.CQRS.Features.Decks.Queries
 @using HazelNet_Application.CQRS.Abstractions
 @using HazelNet_Application.CQRS.Features.Decks.Commands
+@using HazelNet_Web.Features.Deck.Components
 @using HazelNet_Web.ViewModel
 @using Microsoft.AspNetCore.Components.Authorization
 
@@ -110,10 +111,25 @@
    <!-- Card Component-->
     <MudGrid Spacing="5" Justify="Justify.Center" Class="mt-5 px-20">
 
+        @if (_NumOfDecks == 0)
+        {
+            <MudStack Spacing="3" Class="ma-10 pa-10"
+                      AlignItems="AlignItems.Center" Justify="Justify.Center">
+                <MudText Typo="Typo.h2" Color="Color.Primary">
+                    No decks yet.
+                </MudText>
+                <MudText Typo="Typo.body1">
+                    Create your first deck to start studying.
+                </MudText>    
+            </MudStack>
+            
+        }
         @foreach (var deck in _DeckList)
         {
-            <MudItem sm="12" md="4" lg="3" Class="d-flex">
-                <DeckView Deck="deck" />
+            <MudItem @key="deck.Id" sm="12" md="4" lg="3" Class="d-flex">
+                <DeckView Deck="deck" 
+                          OnDeckDeleted="RemoveDeckFromList"
+                          OnDeckUpdated="UpdateDeckInList"/>
             </MudItem>
         }
 
@@ -163,6 +179,11 @@
             _DeckList = await GetDecksHandler.Handle(new GetDecksQuery(parsedUserId));
             _NumOfDecks = _DeckList.Count;
             SortDecks();
+            
+            foreach (var deck in _DeckList)
+            {
+                Console.WriteLine($"Deck: {deck.Name}, ID: {deck.Id}");
+            }
         }
     }
     
@@ -187,7 +208,9 @@
         if (!result.Canceled && result.Data is CreateDeckCommand command)
         {
 
-            await CreateDeckHandler.Handle(command);
+            var newDeckId = await CreateDeckHandler.Handle(command);
+            
+           
             
             _DeckList = await GetDecksHandler.Handle(new GetDecksQuery(parsedUserId));
             _NumOfDecks = _DeckList.Count;
@@ -208,6 +231,28 @@
         };
     }
     
-    
+    private void RemoveDeckFromList(int deletedDeckId)
+    {
+        _DeckList = _DeckList
+            .Where(d => d.Id != deletedDeckId)
+            .ToList();
+
+        _NumOfDecks = _DeckList.Count;
+
+        StateHasChanged();
+    }
+
+    private void UpdateDeckInList(UpdateDeckCommand updated)
+    {
+        var deck = _DeckList.FirstOrDefault(d => d.Id == updated.DeckId);
+
+        if (deck != null)
+        {
+            deck.Name = updated.DeckName;
+            deck.Description = updated.DeckDescription;
+        }
+
+        StateHasChanged();
+    }
     
 }

@@ -11,8 +11,4 @@
       <ProjectReference Include="..\HazelNet-Domain\HazelNet-Domain.csproj" />
     </ItemGroup>
 
-    <ItemGroup>
-      <Folder Include="CQRS\Features\Cards\Command\" />
-    </ItemGroup>
-
 </Project>

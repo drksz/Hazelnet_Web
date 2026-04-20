@@ -17,11 +17,12 @@ public class GetDecksQueryHandler
     public async Task<List<DeckViewModel>> Handle(GetDecksQuery query)
     {
 
-        var decks = await _deckRepository.GetDeckByUserIdAsync(query.UserId);
+        var decks = await _deckRepository.GetAllDeckByUserIdAsync(query.UserId);
 
 
         var result = decks.Select(d => new DeckViewModel
         {
+            Id = d.Id,
             Name = d.DeckName,
             Description = d.DeckDescription,
             TotalNumberOfCards = d.Cards.Count,

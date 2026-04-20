@@ -6,6 +6,7 @@
 @inject ISnackbar Snackbar
 @inject IDialogService DialogService
 @inject ICommandHandler<UpdateDeckCommand> UpdateDeckHandler
+@inject ICommandHandler<CreateDeckCommand, int> CreateDeckCommandHandler
 
 <MudCard Elevation="10" 
                          Style=" min-height: 150px; width: 100%; 
@@ -105,6 +106,7 @@
     [Parameter] public DeckViewModel Deck { get; set; }
     [Parameter] public EventCallback<int> OnDeckDeleted { get; set; }
     [Parameter] public EventCallback<UpdateDeckCommand> OnDeckUpdated { get; set; }
+    [Parameter] public EventCallback OnManageCard { get; set; }
 
     private int _dueToday = 0;
 
@@ -184,6 +186,53 @@
             
             await OnDeckDeleted.InvokeAsync(Deck.Id);
             
+        }
+        catch (UnauthorizedAccessException ex)
+        {
+            Snackbar.Add(ex.Message, Severity.Warning);
+        }
+        catch (KeyNotFoundException ex)
+        {
+            Snackbar.Add(ex.Message, Severity.Error);
+        }
+        catch (Exception)
+        {
+            Snackbar.Add("An error occurred while deleting the deck.", Severity.Error);
+        }
+    }
+
+    private async Task ManageCard()
+    {
+        try
+        {
+            var parameters = new DialogParameters
+            {
+                ["DeckId"] = Deck.Id
+            };
+            
+            var options = new DialogOptions
+            {
+                MaxWidth = MaxWidth.Small,
+                FullWidth = true,
+                CloseButton = true,
+                CloseOnEscapeKey = true,
+                Position = DialogPosition.Center
+            };
+            
+            var dialog = await DialogService.ShowAsync<CreateDeckDialog>(
+                "Manage Card", parameters, options);
+
+            var result = await dialog.Result;
+
+            if (!result.Canceled && result.Data is CreateDeckCommand command)
+            {
+                await CreateDeckCommandHandler.Handle(command);
+
+                Snackbar.Add("Deck updated!", Severity.Success);
+
+                // Notify parent
+                await OnManageCard.InvokeAsync();
+            }
         }
         catch (UnauthorizedAccessException ex)
         {

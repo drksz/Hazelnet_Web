@@ -29,12 +29,13 @@
 
 
   <ItemGroup>
-    <Folder Include="Services\" />
     <Folder Include="Shared\" />
   </ItemGroup>
 
 
   <ItemGroup>
+    <AdditionalFiles Include="Features\Deck\Components\CreateDeckDialog.razor" />
+    <AdditionalFiles Include="Features\Deck\Components\DeckView.razor" />
     <AdditionalFiles Include="Features\Error.razor" />
     <AdditionalFiles Include="Shared\Layout\MainLayout.razor" />
     <AdditionalFiles Include="Shared\Layout\NavMenu.razor" />

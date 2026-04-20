@@ -1,4 +1,5 @@
-﻿@using HazelNet_Application.CQRS.Features.Decks.Commands
+﻿@using System.ComponentModel.DataAnnotations
+@using HazelNet_Application.CQRS.Features.Decks.Commands
 
 <MudDialog>
     <TitleContent>
@@ -21,7 +22,9 @@
 
     <DialogActions>
         <MudButton OnClick="Cancel" Variant="Variant.Outlined">Cancel</MudButton>
-        <MudButton Color="Color.Primary" OnClick="Submit" Variant="Variant.Outlined">OK</MudButton>
+        <MudButton Color="Color.Primary" OnClick="Submit" 
+                   Variant="Variant.Outlined"
+                   Disabled="@(string.IsNullOrEmpty(_deckName))">OK</MudButton>
     </DialogActions>
 </MudDialog>
 
@@ -29,22 +32,37 @@
     [CascadingParameter]
     private IMudDialogInstance MudDialog { get; set; } = default!;
 
-    [Parameter]
-    public int UserId { get; set; }
+    [Parameter] public int UserId { get; set; }
+    [Parameter] public string? InitialName { get; set; }
+    [Parameter] public string? InitialDescription { get; set; }
+    [Parameter] public int? DeckId { get; set; }
 
+    [Required(ErrorMessage = "Deck Name is required.")]
     private string _deckName = string.Empty;
     private string? _description;
+
+    protected override void OnInitialized()
+    {
+        _deckName = InitialName ?? "";
+        _description = InitialDescription ?? "";
+    }
 
     private void Submit()
     {
         var result = new CreateDeckCommand(
-            Id: 0,
             DeckName: _deckName,
-            DeckDescription: _description,
-            UserId: UserId
+            DeckDescription: _description
         );
 
-        MudDialog.Close(DialogResult.Ok(result));
+
+        if (DeckId.HasValue)
+        {
+            MudDialog.Close(
+                DialogResult.Ok(
+                    new UpdateDeckCommand(DeckId.Value, _deckName, _description)));
+        } 
+        else
+            MudDialog.Close(DialogResult.Ok(result));
     }
 
     private void Cancel() => MudDialog.Cancel();

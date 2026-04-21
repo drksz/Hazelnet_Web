@@ -10,4 +10,4 @@ public record CreateCardCommand
     string Front,
     string Back,
     int DeckId
-) : ICommand<int>;
+) : ICommand;

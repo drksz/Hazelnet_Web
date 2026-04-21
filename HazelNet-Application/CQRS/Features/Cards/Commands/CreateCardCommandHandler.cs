@@ -4,7 +4,7 @@ using HazelNet_Domain.Models;
 
 namespace HazelNet_Application.CQRS.Features.Cards.Commands;
 
-public class CreateCardCommandHandler : ICommandHandler<CreateCardCommand, int>
+public class CreateCardCommandHandler : ICommandHandler<CreateCardCommand>
 {
     
     private ICardRepository _cardRepository;
@@ -16,7 +16,7 @@ public class CreateCardCommandHandler : ICommandHandler<CreateCardCommand, int>
         _reviewHistoryRepository = reviewHistoryRepository;
     }
 
-    public async Task<int> Handle(CreateCardCommand command)
+    public async Task Handle(CreateCardCommand command)
     {
         var reviewHistory = new ReviewHistory(command.Id);
         var card = new Card
@@ -33,6 +33,5 @@ public class CreateCardCommandHandler : ICommandHandler<CreateCardCommand, int>
 
         await _cardRepository.Create(card);
         await _reviewHistoryRepository.Create(reviewHistory);
-        return card.Id;
     }
 }

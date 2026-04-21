@@ -13,7 +13,7 @@
 
 @inject AuthenticationStateProvider AuthenticationStateProvider
 @inject IQueryHandler<GetDecksQuery, List<DeckViewModel>> GetDecksHandler
-@inject ICommandHandler<CreateDeckCommand, int> CreateDeckHandler
+@inject ICommandHandler<CreateDeckCommand> CreateDeckHandler
 @inject IDialogService DialogService
 
 @attribute [Authorize]
@@ -129,7 +129,8 @@
             <MudItem @key="deck.Id" sm="12" md="4" lg="3" Class="d-flex">
                 <DeckView Deck="deck" 
                           OnDeckDeleted="RemoveDeckFromList"
-                          OnDeckUpdated="UpdateDeckInList"/>
+                          OnDeckUpdated="UpdateDeckInList"
+                          OnManageCard="ManageCardInDeck"/>
             </MudItem>
         }
 
@@ -180,10 +181,6 @@
             _NumOfDecks = _DeckList.Count;
             SortDecks();
             
-            foreach (var deck in _DeckList)
-            {
-                Console.WriteLine($"Deck: {deck.Name}, ID: {deck.Id}");
-            }
         }
     }
     
@@ -208,7 +205,7 @@
         if (!result.Canceled && result.Data is CreateDeckCommand command)
         {
 
-            var newDeckId = await CreateDeckHandler.Handle(command);
+            await CreateDeckHandler.Handle(command);
             
            
             
@@ -252,6 +249,11 @@
             deck.Description = updated.DeckDescription;
         }
 
+        StateHasChanged();
+    }
+
+    private void ManageCardInDeck()
+    {
         StateHasChanged();
     }
     

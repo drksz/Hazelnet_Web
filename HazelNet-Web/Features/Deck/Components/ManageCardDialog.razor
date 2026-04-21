@@ -1,5 +1,22 @@
-﻿<h3>ManageCardDialog</h3>
+﻿
 
-@code {
+<MudDialog>
+    <TitleContent>
+        Manage Cards
+    </TitleContent>
     
+    <DialogContent>
+        <MudText Typo="Typo.h3">
+            Manage Cards
+        </MudText>
+    </DialogContent>
+</MudDialog>
+
+
+@code
+{
+    [CascadingParameter]
+    private IMudDialogInstance MudDialog { get; set; } = default!;
+    
+    [Parameter] public int DeckId { get; set; }
 }

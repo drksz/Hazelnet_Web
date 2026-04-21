@@ -6,7 +6,7 @@
 @inject ISnackbar Snackbar
 @inject IDialogService DialogService
 @inject ICommandHandler<UpdateDeckCommand> UpdateDeckHandler
-@inject ICommandHandler<CreateDeckCommand, int> CreateDeckCommandHandler
+@inject ICommandHandler<CreateDeckCommand> CreateDeckCommandHandler
 
 <MudCard Elevation="10" 
                          Style=" min-height: 150px; width: 100%; 
@@ -91,7 +91,8 @@
                                                     StartIcon="@Icons.Material.Filled.AddCard"
                                                     Size="Size.Medium"
                                                     Color="Color.Info"
-                                                    Style="white-space: nowrap;"/>
+                                                    Style="white-space: nowrap;"
+                                                    OnClick="@ManageCard"/>
                                 </MudFabMenu>
                             </MudItem>
                         </MudGrid>
@@ -219,7 +220,7 @@
                 Position = DialogPosition.Center
             };
             
-            var dialog = await DialogService.ShowAsync<CreateDeckDialog>(
+            var dialog = await DialogService.ShowAsync<ManageCardDialog>(
                 "Manage Card", parameters, options);
 
             var result = await dialog.Result;

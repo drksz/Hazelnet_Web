@@ -6,7 +6,7 @@ using HazelNet_Domain.Models;
 
 namespace HazelNet_Application.CQRS.Features.Decks.Commands;
 
-public class CreateDeckCommandHandler : ICommandHandler<CreateDeckCommand, int>
+public class CreateDeckCommandHandler : ICommandHandler<CreateDeckCommand>
 {
     private readonly ICurrentUserService _currentUserService;
     private readonly IDeckRepository _deckRepository;
@@ -18,7 +18,7 @@ public class CreateDeckCommandHandler : ICommandHandler<CreateDeckCommand, int>
     }
 
 
-    public async Task<int> Handle(CreateDeckCommand command)
+    public async Task Handle(CreateDeckCommand command)
     {
         var userIdString = await _currentUserService.GetUserIdAsync();
         
@@ -37,6 +37,5 @@ public class CreateDeckCommandHandler : ICommandHandler<CreateDeckCommand, int>
         };
         
         await _deckRepository.CreateAsync(deck);
-        return deck.Id;
     }
 }

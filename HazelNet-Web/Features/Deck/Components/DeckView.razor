@@ -1,4 +1,5 @@
 ﻿@using HazelNet_Application.CQRS.Abstractions
+@using HazelNet_Application.CQRS.Features.Cards.Commands
 @using HazelNet_Application.CQRS.Features.Decks.Commands
 @using HazelNet_Web.ViewModel
 
@@ -208,16 +209,18 @@
         {
             var parameters = new DialogParameters
             {
-                ["DeckId"] = Deck.Id
+                ["DeckId"] = Deck.Id,
+                ["DeckName"] = Deck.Name
             };
             
             var options = new DialogOptions
             {
-                MaxWidth = MaxWidth.Small,
+                MaxWidth = MaxWidth.Medium,
                 FullWidth = true,
                 CloseButton = true,
                 CloseOnEscapeKey = true,
-                Position = DialogPosition.Center
+                Position = DialogPosition.Center,
+                BackdropClick = false
             };
             
             var dialog = await DialogService.ShowAsync<ManageCardDialog>(
@@ -225,12 +228,9 @@
 
             var result = await dialog.Result;
 
-            if (!result.Canceled && result.Data is CreateDeckCommand command)
+            if (!result.Canceled)
             {
-                await CreateDeckCommandHandler.Handle(command);
-
-                Snackbar.Add("Deck updated!", Severity.Success);
-
+                
                 // Notify parent
                 await OnManageCard.InvokeAsync();
             }

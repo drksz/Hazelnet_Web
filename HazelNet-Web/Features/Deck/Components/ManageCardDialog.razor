@@ -1,14 +1,56 @@
-﻿
+﻿@using System.ComponentModel.DataAnnotations
+@using HazelNet_Application.CQRS.Abstractions
+@using HazelNet_Application.CQRS.Features.Cards.Commands
+@inject ICommandHandler<CreateCardCommand>  CreateCardCommandHandler
 
 <MudDialog>
     <TitleContent>
-        Manage Cards
+        @DeckName
     </TitleContent>
     
     <DialogContent>
-        <MudText Typo="Typo.h3">
-            Manage Cards
-        </MudText>
+        <MudCard Elevation="0" Outlined="true" Class="pa-5">
+            <MudCardHeader>
+                <CardHeaderContent> 
+                    <MudText Typo="Typo.h5">
+                        Create New Card
+                    </MudText>
+                </CardHeaderContent>
+            </MudCardHeader>
+            
+            <MudCardContent>
+                <MudStack Row="true">
+                    <MudTextField T="string" @bind-Value="FrontOfCard" Label="Front"  Required="true"
+                                  Clearable="true" Variant="Variant.Outlined" ShrinkLabel="true"
+                                  Lines="3" Sizing="InputSizing.Auto" FullWidth="true"
+                                  Immediate="true"
+                                  Placeholder="Enter question or term..."/>
+                    <MudTextField T="string" @bind-Value="BackOfCard" Label="Back"
+                                  Clearable="true" Variant="Variant.Outlined" ShrinkLabel="true"
+                                  Lines="3" Sizing="InputSizing.Auto" FullWidth="true"
+                                  Immediate="true"  Placeholder="Enter answer or definition..."/>
+                </MudStack>
+            </MudCardContent>
+            
+            <MudCardActions Class="justify-end align-center">
+                <MudButton Variant="Variant.Filled"
+                           Color="Color.Primary"
+                           StartIcon="@Icons.Material.Filled.Add"
+                           Ripple="true"
+                           Size="Size.Medium"
+                           OnClick="@AddNewCard">
+                    Add Card
+                </MudButton>
+            </MudCardActions>
+        </MudCard>
+        
+        <MudContainer MaxWidth="MaxWidth.Large" Class="pa-5">
+            <MudText Typo="Typo.h4">
+                Cards in this Deck (@TotalNumberOfCards)
+            </MudText>
+            
+            
+        </MudContainer>
     </DialogContent>
 </MudDialog>
 
@@ -19,4 +61,29 @@
     private IMudDialogInstance MudDialog { get; set; } = default!;
     
     [Parameter] public int DeckId { get; set; }
+    [Parameter]  public required string DeckName { get; set; }
+    
+    public required string FrontOfCard;
+    public string BackOfCard;
+
+    public int TotalNumberOfCards = 0;
+
+
+    public async Task AddNewCard()
+    {
+        var command = new CreateCardCommand(
+            0,
+            FrontOfCard,
+            BackOfCard,
+            DeckId
+        );
+
+        await CreateCardCommandHandler.Handle(command);
+        
+        TotalNumberOfCards++;
+        FrontOfCard = string.Empty;
+        BackOfCard = string.Empty;
+    }
+
+
 }

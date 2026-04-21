@@ -6,4 +6,4 @@ public record CreateDeckCommand
 (
     string DeckName,
     string? DeckDescription
-) : ICommand<int>;
+) : ICommand;

@@ -2,6 +2,7 @@ using System.Security.Claims;
 using HazelNet_Application.Auth;
 using HazelNet_Application.CQRS.Abstractions;
 using HazelNet_Application.CQRS.Abstractions.Identity;
+using HazelNet_Application.CQRS.Features.Cards.Commands;
 using HazelNet_Application.CQRS.Features.Decks.Commands;
 using HazelNet_Application.CQRS.Features.Decks.Queries;
 using HazelNet_Application.Interface;
@@ -50,6 +51,9 @@ builder.Services.AddCascadingAuthenticationState();
 
 builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<IDeckRepository, DeckRepository>();
+builder.Services.AddScoped<ICardRepository, CardRepository>();
+builder.Services.AddScoped<IReviewHistoryRepository, ReviewHistoryRepository>();
+builder.Services.AddScoped<IReviewLogRepository, ReviewLogRepository>();
 
 builder.Services.AddScoped<ICurrentUserService, CurrentUserService>();
 
@@ -59,9 +63,10 @@ builder.Services.AddScoped<LoginHandler>();
 builder.Services.AddHttpClient();
 
 builder.Services.AddScoped<IQueryHandler<GetDecksQuery, List<DeckViewModel>>, GetDecksQueryHandler>();
-builder.Services.AddScoped<ICommandHandler<CreateDeckCommand, int>, CreateDeckCommandHandler>();
+builder.Services.AddScoped<ICommandHandler<CreateDeckCommand>, CreateDeckCommandHandler>();
 builder.Services.AddScoped<ICommandHandler<DeleteDeckCommand>, DeleteDeckCommandHandler>();
 builder.Services.AddScoped<ICommandHandler<UpdateDeckCommand>, UpdateDeckCommandHandler>();
+builder.Services.AddScoped<ICommandHandler<CreateCardCommand>, CreateCardCommandHandler>();
 
 
 builder.Services.AddHttpClient("LocalApi", (sp, client) =>

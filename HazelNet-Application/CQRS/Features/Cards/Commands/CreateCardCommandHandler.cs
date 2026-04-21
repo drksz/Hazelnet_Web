@@ -18,7 +18,7 @@ public class CreateCardCommandHandler : ICommandHandler<CreateCardCommand>
 
     public async Task Handle(CreateCardCommand command)
     {
-        var reviewHistory = new ReviewHistory(command.Id);
+       
         var card = new Card
         {
             FrontOfCard = command.Front,
@@ -28,10 +28,11 @@ public class CreateCardCommandHandler : ICommandHandler<CreateCardCommand>
             State = State.New,
             LastReview = DateTime.UtcNow,
             Due = DateTime.UtcNow,
-            ReviewHistory = reviewHistory
+            Deck = null,
+            
+            ReviewHistory = new ReviewHistory(),
         };
 
         await _cardRepository.Create(card);
-        await _reviewHistoryRepository.Create(reviewHistory);
     }
 }

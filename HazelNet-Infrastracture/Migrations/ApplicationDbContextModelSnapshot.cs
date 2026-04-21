@@ -114,7 +114,10 @@ namespace HazelNet_Infrastractire.Migrations
             modelBuilder.Entity("HazelNet_Domain.Models.ReviewHistory", b =>
                 {
                     b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
                         .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
                     b.Property<int>("CardId")
                         .HasColumnType("integer");

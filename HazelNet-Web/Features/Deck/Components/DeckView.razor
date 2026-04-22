@@ -183,7 +183,7 @@
         
             await DeleteDeckCommandHandler.Handle(command);
         
-            Snackbar.Add($"{Deck.Name} deleted successfully", Severity.Success);
+            Snackbar.Add($"{Deck.Name} deleted successfully", Severity.Info);
         
             
             await OnDeckDeleted.InvokeAsync(Deck.Id);

@@ -6,6 +6,8 @@
 @inject ICommandHandler<CreateCardCommand>  CreateCardCommandHandler
 @inject IQueryHandler<GetAllCardsInDeckQuery, List<Card>> GetAllCardsInDeckQueryHandler
 @inject ICommandHandler<UpdateCardCommand> UpdateCardCommandHandler
+@inject ISnackbar Snackbar
+
 
 <MudDialog>
     <TitleContent>
@@ -194,6 +196,8 @@
         }
         
         MudDialog.Close(DialogResult.Ok(true));
+        Snackbar.Add("Cards Updated Successfully." ,Severity.Success);
+
     }
     
 

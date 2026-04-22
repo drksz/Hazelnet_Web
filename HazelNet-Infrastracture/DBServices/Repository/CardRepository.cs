@@ -22,7 +22,7 @@ public class CardRepository : ICardRepository
         return await _context.Cards.FindAsync(cardId);
     }
 
-    public async Task<List<Card>> GetCardByDeckId(int deckId)
+    public async Task<List<Card>> GetAllCardByDeckId(int deckId)
     {
         return await _context.Cards
             .Where(c => c.DeckId == deckId)

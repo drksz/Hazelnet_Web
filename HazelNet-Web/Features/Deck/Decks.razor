@@ -12,7 +12,7 @@
 @using Microsoft.AspNetCore.Components.Authorization
 
 @inject AuthenticationStateProvider AuthenticationStateProvider
-@inject IQueryHandler<GetDecksQuery, List<DeckViewModel>> GetDecksHandler
+@inject IQueryHandler<GetDecksVMQuery, List<DeckViewModel>> GetDecksVMHandler
 @inject ICommandHandler<CreateDeckCommand> CreateDeckHandler
 @inject IDialogService DialogService
 
@@ -177,7 +177,7 @@
             }
             if (!int.TryParse(_UserId, out int parsedUserId)) return;
             
-            _DeckList = await GetDecksHandler.Handle(new GetDecksQuery(parsedUserId));
+            _DeckList = await GetDecksVMHandler.Handle(new GetDecksVMQuery(parsedUserId));
             _NumOfDecks = _DeckList.Count;
             SortDecks();
             
@@ -209,7 +209,7 @@
             
            
             
-            _DeckList = await GetDecksHandler.Handle(new GetDecksQuery(parsedUserId));
+            _DeckList = await GetDecksVMHandler.Handle(new GetDecksVMQuery(parsedUserId));
             _NumOfDecks = _DeckList.Count;
             StateHasChanged();
         }

@@ -3,7 +3,7 @@ namespace HazelNet_Domain.Models;
 public class Card
 {
     
-    public int Id { get; private set; }
+    public int Id { get; set; }
     public required string FrontOfCard { get; set; }
     public string? BackOfCard { get; set; }
     public DateTime CreationDate { get; set; } = DateTime.Now;

@@ -15,5 +15,10 @@ public class ReviewHistoryEntityTypeConfiguration:  IEntityTypeConfiguration<Rev
             .WithOne(l => l.ReviewHistory)
             .HasForeignKey(l => l.ReviewHistoryId)
             .OnDelete(DeleteBehavior.Cascade);
+
+        builder.HasOne(h => h.Card)
+            .WithOne(c => c.ReviewHistory)
+            .HasForeignKey<ReviewHistory>(h => h.CardId)
+            .OnDelete(DeleteBehavior.Cascade);
     }
 }

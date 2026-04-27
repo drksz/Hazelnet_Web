@@ -22,6 +22,10 @@ public class Parameters
     {
         W = Weights.Default();
     }
+    public Parameters (double[] weights)
+    {
+        W = weights;
+    }
 
     //parameters config
     public static Parameters DefaultParam()

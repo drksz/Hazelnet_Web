@@ -68,7 +68,7 @@ namespace HazelNet.Tests.Optimizer
             };
             
             // FIX: Don't assign ReviewLogs via initializer. Add to the existing list.
-            var historyItem = new ReviewHistory(1);
+            var historyItem = new ReviewHistory();
             foreach (var log in logs) historyItem.ReviewLogs.Add(log);
             
             var history = new List<ReviewHistory> { historyItem };
@@ -94,7 +94,7 @@ namespace HazelNet.Tests.Optimizer
             };
             
             // FIX: Use foreach loop instead of AddRange
-            var historyItem = new ReviewHistory(1);
+            var historyItem = new ReviewHistory();
             foreach (var log in logs) historyItem.ReviewLogs.Add(log);
 
             var history = new List<ReviewHistory> { historyItem };
@@ -119,7 +119,7 @@ namespace HazelNet.Tests.Optimizer
             };
             
             // FIX: Use foreach loop instead of AddRange
-            var historyItem = new ReviewHistory(1);
+            var historyItem = new ReviewHistory();
             foreach (var log in logs) historyItem.ReviewLogs.Add(log);
 
             var history = new List<ReviewHistory> { historyItem };
@@ -141,7 +141,7 @@ namespace HazelNet.Tests.Optimizer
             }
             
             // FIX: Use foreach loop instead of AddRange
-            var historyItem = new ReviewHistory(1);
+            var historyItem = new ReviewHistory();
             foreach (var log in logs) historyItem.ReviewLogs.Add(log);
 
             var history = new List<ReviewHistory> { historyItem };
@@ -171,7 +171,7 @@ namespace HazelNet.Tests.Optimizer
 
         private ReviewHistory CreateReviewHistory(int cardId, int reviewCount)
         {
-            var history = new ReviewHistory(cardId);
+            var history = new ReviewHistory();
             var rng = new Random(cardId);
             var now = DateTime.Now;
 

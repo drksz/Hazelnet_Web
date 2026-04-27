@@ -24,7 +24,7 @@ public class StudyCardCommandHandler : ICommandHandler<StudyCardCommand>
             throw new Exception($"Card with Id {command.CardId} not found.");
         }
         
-        var parameters = new Parameters();
+        var parameters = new Parameters(command.Parameters);
         var fsrs = new FSRS(parameters);
         var now = DateTime.UtcNow;
 

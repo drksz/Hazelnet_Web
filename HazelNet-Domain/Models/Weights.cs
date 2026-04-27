@@ -1,4 +1,4 @@
-namespace HazelNet_Domain.Services.FSRS;
+namespace HazelNet_Domain.Models;
 
 public static class Weights
 {

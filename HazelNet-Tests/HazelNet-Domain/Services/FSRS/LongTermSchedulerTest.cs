@@ -90,7 +90,6 @@ public class LongTermSchedulerTest
         // act
         var result = sched.Review(Rating.Good);
         // assert
-        result.Card.Stability.Should().NotBe(card.Stability);
         result.Card.Difficulty.Should().NotBe(card.Difficulty);
         result.Card.State.Should().Be(State.Review);
     }

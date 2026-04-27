@@ -33,7 +33,7 @@ public class AnalysisTest
     [Fact]
     public void Analysis_AvgDifficulty_ReturnsRatingEnum() {
         // arrange
-        var revHist = new ReviewHistory(1)
+        var revHist = new ReviewHistory()
         {
             ReviewLogs = {
                 new ReviewLog() { Rating = Rating.Again }, // 1

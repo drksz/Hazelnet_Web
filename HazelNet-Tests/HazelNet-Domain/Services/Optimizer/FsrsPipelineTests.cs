@@ -88,7 +88,7 @@ namespace HazelNet.Tests.Optimizer
                 new ReviewLog { ElapsedDays = 3, Rating = Rating.Again, Review = DateTime.Now }
             };
 
-            var historyItem = new ReviewHistory(1);
+            var historyItem = new ReviewHistory();
             foreach (var log in logs) historyItem.ReviewLogs.Add(log);
 
             var history = new List<ReviewHistory> { historyItem };
@@ -188,7 +188,7 @@ namespace HazelNet.Tests.Optimizer
             // seed 10 cards worth of review data into the stubs
             for (int cardId = 1; cardId <= 10; cardId++)
             {
-                var history = new ReviewHistory(cardId) { Id = cardId };
+                var history = new ReviewHistory() { Id = cardId };
                 reviewHistoryRepo.AddByCardId(cardId, history);
 
                 var logs = GenerateReviewLogs(count: 5, historyId: cardId);
@@ -215,7 +215,7 @@ namespace HazelNet.Tests.Optimizer
             var reviewHistoryRepo = new StubReviewHistoryRepository();
             var reviewLogRepo = new StubReviewLogRepository();
 
-            var history = new ReviewHistory(1) { Id = 1 };
+            var history = new ReviewHistory() { Id = 1 };
             reviewHistoryRepo.AddByCardId(1, history);
             reviewLogRepo.AddLogsByHistoryId(1, GenerateReviewLogs(count: 5, historyId: 1));
             // cardId=2 is NOT seeded - it has no review history
@@ -301,7 +301,7 @@ namespace HazelNet.Tests.Optimizer
 
         private ReviewHistory CreateReviewHistory(int cardId, int reviewCount)
         {
-            var history = new ReviewHistory(cardId);
+            var history = new ReviewHistory();
             var rng = new Random(cardId); // Fixed seed for reproducibility
             var now = DateTime.Now;
 

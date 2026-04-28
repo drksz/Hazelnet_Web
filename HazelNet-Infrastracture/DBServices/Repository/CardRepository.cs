@@ -17,7 +17,7 @@ public class CardRepository : ICardRepository
         _context = context;
     }
     
-    public async Task<Card?> Get(int cardId)
+    public async Task<Card?> GetCardByIdAsync(int cardId)
     {
         return await _context.Cards.FindAsync(cardId);
     }
@@ -29,15 +29,15 @@ public class CardRepository : ICardRepository
             .ToListAsync();
     }
 
-    public async Task Update(Card card)
+    public async Task UpdateCardAsync(Card card)
     {
         _context.Cards.Update(card);
         await _context.SaveChangesAsync();
     }
 
-    public async Task Delete(int cardId)
+    public async Task DeleteCardByIdAsync(int cardId)
     {
-        var card = await Get(cardId);
+        var card = await GetCardByIdAsync(cardId);
         if (card != null)
         {
             _context.Cards.Remove(card);
@@ -45,7 +45,7 @@ public class CardRepository : ICardRepository
         }
     }
 
-    public async Task Create(Card card)
+    public async Task CreateCardAsync(Card card)
     {
         await _context.Cards.AddAsync(card);
         await _context.SaveChangesAsync();

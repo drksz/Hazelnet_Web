@@ -247,7 +247,8 @@ namespace HazelNet.Tests.Optimizer
                 {
                     FrontOfCard = $"front-{i}",
                     BackOfCard = $"back-{i}",
-                    DeckId = deck.Id
+                    DeckId = deck.Id,
+                    Deck = deck
                 };
                 ctx.Cards.Add(card);
             }

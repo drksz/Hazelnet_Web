@@ -69,7 +69,7 @@
                                             DropShadow="false"
                                             OpenOnMouseHover="false"
                                             CloseOnMenuItemClicked="true"
-                                            DampenItemsBackgroundColor="false">
+                                            DampenItemsBackgroundColor="true">
                                     
                                     
                                     <MudFabMenuItem Label="Delete"
@@ -88,10 +88,10 @@
                                                     Size="Size.Medium"
                                                     Color="Color.Dark"
                                                     OnClick="@EditDeck"/>
-                                    <MudFabMenuItem Label="Manage Cards"
-                                                    StartIcon="@Icons.Material.Filled.AddCard"
+                                    <MudFabMenuItem Label="Cards"
+                                                    StartIcon="@Icons.Material.Filled.CreditCard"
                                                     Size="Size.Medium"
-                                                    Color="Color.Info"
+                                                    Color="Color.Primary"
                                                     Style="white-space: nowrap;"
                                                     OnClick="@ManageCard"/>
                                 </MudFabMenu>

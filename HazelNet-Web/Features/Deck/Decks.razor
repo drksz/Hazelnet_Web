@@ -131,7 +131,8 @@
             <MudItem @key="deck.Id" sm="12" md="4" lg="3" Class="d-flex">
                 <DeckView Deck="deck" 
                           OnDeckDeleted="RemoveDeckFromList"
-                          OnDeckUpdated="UpdateDeckInList"/>
+                          OnDeckUpdated="UpdateDeckInList"
+                          OnDeckCleared="ClearedDeckUpdate"/>
             </MudItem>
         }
 
@@ -253,6 +254,11 @@
             deck.Description = updated.DeckDescription;
         }
 
+        StateHasChanged();
+    }
+
+    private void ClearedDeckUpdate()
+    {
         StateHasChanged();
     }
     

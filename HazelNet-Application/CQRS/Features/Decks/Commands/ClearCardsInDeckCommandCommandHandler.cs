@@ -4,20 +4,18 @@ using HazelNet_Domain.IRepository;
 
 namespace HazelNet_Application.CQRS.Features.Decks.Commands;
 
-public class DeleteDeckCommandHandler : ICommandHandler<DeleteDeckCommand>
+public class ClearCardsInDeckCommandCommandHandler : ICommandHandler<ClearCardsInDeckCommand>
 {
     private readonly IDeckRepository _deckRepository;
     private readonly ICurrentUserService _currentUserService;
-    
-    public DeleteDeckCommandHandler
-        (IDeckRepository deckRepository , 
-            ICurrentUserService currentUserService)
+
+    public ClearCardsInDeckCommandCommandHandler(IDeckRepository deckRepository, ICurrentUserService currentUserService)
     {
-    _deckRepository = deckRepository;
-    _currentUserService = currentUserService;
+        _deckRepository = deckRepository;
+        _currentUserService = currentUserService;
     }
 
-    public async Task Handle(DeleteDeckCommand command)
+    public async Task Handle(ClearCardsInDeckCommand command)
     {
         var userIdString = await _currentUserService.GetUserIdAsync();
         
@@ -36,6 +34,6 @@ public class DeleteDeckCommandHandler : ICommandHandler<DeleteDeckCommand>
             throw new UnauthorizedAccessException("You do not have permission to delete this deck.");
         }
 
-        await _deckRepository.DeleteDeckAsync(deck);
+        await _deckRepository.ClearAllCardsInDeckAsync(command.Id);
     }
 }

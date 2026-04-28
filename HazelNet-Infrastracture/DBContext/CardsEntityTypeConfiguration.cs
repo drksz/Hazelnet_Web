@@ -10,8 +10,7 @@ public class CardsEntityTypeConfiguration :IEntityTypeConfiguration<Card>
     {
         builder.HasKey(c => c.Id);
         builder.Property(c => c.Id).ValueGeneratedOnAdd();
-        builder.Property(c => c.FrontOfCard)
-            .HasMaxLength(100);
+        builder.Property(c => c.FrontOfCard);
         
         builder.HasOne(c => c.Deck)
             .WithMany(d => d.Cards)

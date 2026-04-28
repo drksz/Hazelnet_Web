@@ -108,7 +108,6 @@
     [Parameter] public DeckViewModel Deck { get; set; }
     [Parameter] public EventCallback<int> OnDeckDeleted { get; set; }
     [Parameter] public EventCallback<UpdateDeckCommand> OnDeckUpdated { get; set; }
-    [Parameter] public EventCallback OnManageCard { get; set; }
 
     private int _dueToday = 0;
 
@@ -230,9 +229,8 @@
 
             if (!result.Canceled)
             {
-                
-                // Notify parent
-                await OnManageCard.InvokeAsync();
+
+                StateHasChanged();
             }
         }
         catch (UnauthorizedAccessException ex)

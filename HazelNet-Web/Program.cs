@@ -73,6 +73,7 @@ builder.Services.AddScoped<ICommandHandler<UpdateDeckCommand>, UpdateDeckCommand
 
 builder.Services.AddScoped<ICommandHandler<CreateCardCommand>, CreateCardCommandHandler>();
 builder.Services.AddScoped<ICommandHandler<UpdateCardCommand>, UpdateCardCommandHandler>();
+builder.Services.AddScoped<ICommandHandler<DeleteCardCommand>, DeleteCardCommandHandler>();
 
 
 builder.Services.AddHttpClient("LocalApi", (sp, client) =>

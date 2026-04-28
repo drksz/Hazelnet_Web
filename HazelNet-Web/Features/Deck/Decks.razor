@@ -132,7 +132,7 @@
                 <DeckView Deck="deck" 
                           OnDeckDeleted="RemoveDeckFromList"
                           OnDeckUpdated="UpdateDeckInList"
-                          OnManageCard="ManageCardInDeck"/>
+                          OnDeckCleared="ClearedDeckUpdate"/>
             </MudItem>
         }
 
@@ -257,9 +257,10 @@
         StateHasChanged();
     }
 
-    private void ManageCardInDeck()
+    private void ClearedDeckUpdate()
     {
         StateHasChanged();
     }
+    
     
 }

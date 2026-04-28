@@ -6,6 +6,7 @@
 @inject ICommandHandler<CreateCardCommand>  CreateCardCommandHandler
 @inject IQueryHandler<GetAllCardsInDeckQuery, List<Card>> GetAllCardsInDeckQueryHandler
 @inject ICommandHandler<UpdateCardCommand> UpdateCardCommandHandler
+@inject ICommandHandler<DeleteCardCommand> DeleteCardCommandHandler
 @inject ISnackbar Snackbar
 
 
@@ -79,7 +80,8 @@
                         <MudIconButton Icon="@Icons.Material.Filled.Delete" 
                                        Variant="Variant.Outlined" 
                                        Color="Color.Error" 
-                                       Size="Size.Medium" />
+                                       Size="Size.Medium"
+                                       OnClick="@(() => DeleteCard(card.Id))"/>
 
                     </MudStack>
                     
@@ -117,6 +119,7 @@
 {
     [CascadingParameter]
     private IMudDialogInstance MudDialog { get; set; } = default!;
+    
     
     [Parameter] public int DeckId { get; set; }
     [Parameter]  public required string DeckName { get; set; }
@@ -156,7 +159,7 @@
         }).ToList();
     }
 
-    public async Task AddNewCard()
+    private async Task AddNewCard()
     {
         var command = new CreateCardCommand(
             0,
@@ -166,12 +169,12 @@
         );
 
         await CreateCardCommandHandler.Handle(command);
-        var query = new GetAllCardsInDeckQuery(DeckId);
-        Cards = await GetAllCardsInDeckQueryHandler.Handle(query);
+        await LoadCards();
         
-        TotalNumberOfCards++;
         FrontOfCard = string.Empty;
         BackOfCard = string.Empty;
+
+        StateHasChanged();
     }
 
     private void Cancel()
@@ -198,6 +201,14 @@
         MudDialog.Close(DialogResult.Ok(true));
         Snackbar.Add("Cards Updated Successfully." ,Severity.Success);
 
+    }
+
+    private async Task DeleteCard(int cardId)
+    {
+        var command = new DeleteCardCommand(cardId);
+        await DeleteCardCommandHandler.Handle(command);
+        await LoadCards();
+        StateHasChanged();
     }
     
 

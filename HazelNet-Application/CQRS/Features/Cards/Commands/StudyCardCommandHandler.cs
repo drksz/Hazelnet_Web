@@ -18,7 +18,7 @@ public class StudyCardCommandHandler : ICommandHandler<StudyCardCommand>
 
     public async Task Handle(StudyCardCommand command)
     {
-        var card = await _cardRepository.Get(command.CardId);
+        var card = await _cardRepository.GetCardByIdAsync(command.CardId);
         if (card == null)
         {
             throw new Exception($"Card with Id {command.CardId} not found.");
@@ -33,7 +33,7 @@ public class StudyCardCommandHandler : ICommandHandler<StudyCardCommand>
         reviewLog.ReviewHistoryId = card.ReviewHistory.Id;
 
         await _reviewLogRepository.Create(reviewLog);
-        await _cardRepository.Update(card);
+        await _cardRepository.UpdateCardAsync(card);
 
     }
 }

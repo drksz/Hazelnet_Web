@@ -23,7 +23,7 @@ public class CardQueriesIntegrationTests : IDisposable
             .UseSqlite(_connection)
             .Options;
 
-        _dbContext = new ApplicationDbContext(options);
+        _dbContext = new SqliteTestDbContext(options);
         _dbContext.Database.EnsureCreated();
     }
 
@@ -142,5 +142,20 @@ public class CardQueriesIntegrationTests : IDisposable
     {
         _dbContext.Dispose();
         _connection.Dispose();
+    }
+
+    // PR #82 added User.FSRSParameters (double[] W — Npgsql-specific, no SQLite value converter)
+    // and Card.ReviewHistoryId (shadows the explicit 1:1 FK config). Both are ignored here so
+    // EF Core can build a valid model against SQLite's in-memory store.
+    private sealed class SqliteTestDbContext : ApplicationDbContext
+    {
+        public SqliteTestDbContext(DbContextOptions<ApplicationDbContext> options) : base(options) { }
+
+        protected override void OnModelCreating(ModelBuilder modelBuilder)
+        {
+            base.OnModelCreating(modelBuilder);
+            modelBuilder.Entity<User>().Ignore(u => u.FSRSParameters);
+            modelBuilder.Entity<Card>().Ignore(c => c.ReviewHistoryId);
+        }
     }
 }

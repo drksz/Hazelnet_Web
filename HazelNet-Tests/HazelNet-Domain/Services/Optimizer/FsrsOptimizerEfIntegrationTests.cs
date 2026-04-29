@@ -219,9 +219,6 @@ namespace HazelNet.Tests.Optimizer
         private static List<int> SeedDeckCardsAndHistories(ApplicationDbContext ctx, int cardCount, int logsPerCard)
         {
             // Build the dependency chain bottom-up: User -> Deck -> Card -> ReviewHistory -> ReviewLog.
-            // Deck requires a UserId FK and Card requires a DeckId FK, so a User must exist first.
-            // User.Id and Deck.Id are ValueGeneratedOnAdd; we let EF assign them and use the
-            // navigation properties to wire FKs implicitly.
             var user = new User
             {
                 Username = "test-user",
@@ -239,8 +236,6 @@ namespace HazelNet.Tests.Optimizer
             ctx.Decks.Add(deck);
             ctx.SaveChanges();
 
-            // Card.Id is private-set + ValueGeneratedOnAdd, so EF generates IDs at SaveChanges.
-            // We add cards then save, then re-read to get the assigned IDs.
             for (int i = 1; i <= cardCount; i++)
             {
                 var card = new Card
@@ -254,35 +249,36 @@ namespace HazelNet.Tests.Optimizer
             }
             ctx.SaveChanges();
 
-            // After save, cards have generated Ids. Re-read them so we know the actual values
-            // and can attach histories with matching CardId.
             var savedCards = ctx.Cards.OrderBy(c => c.Id).ToList();
 
-            int historyId = 1;
-            int logIdSeed = 1;
+            // Phase 1: persist histories so the DB assigns their real IDs.
+            // SQLite enforces FK constraints per-statement, so ReviewLog rows must not
+            // be inserted in the same batch as their parent ReviewHistory rows — the
+            // ordering within a batch is not guaranteed, and the FK check fires before
+            // the parent row is visible.
+            var histories = savedCards
+                .Select(card => new ReviewHistory(card.Id))
+                .ToList();
+            ctx.ReviewHistory.AddRange(histories);
+            ctx.SaveChanges();
+
+            // Phase 2: build logs referencing the DB-assigned history IDs.
             var rng = new Random(42);
             var now = DateTime.UtcNow;
-
-            foreach (var card in savedCards)
+            foreach (var history in histories)
             {
-                var history = new ReviewHistory(card.Id) { Id = historyId };
-                ctx.ReviewHistory.Add(history);
-
                 for (int j = 0; j < logsPerCard; j++)
                 {
-                    var log = new ReviewLog
+                    ctx.ReviewLogs.Add(new ReviewLog
                     {
-                        Id = logIdSeed++,
                         Review = now.AddDays(-logsPerCard + j),
                         Rating = (Rating)(rng.Next(1, 5)),
                         ElapsedDays = (ulong)(j > 0 ? rng.Next(1, 10) : 0),
                         ScheduledDays = (ulong)rng.Next(1, 15),
                         State = State.Review,
                         ReviewHistoryId = history.Id
-                    };
-                    ctx.ReviewLogs.Add(log);
+                    });
                 }
-                historyId++;
             }
             ctx.SaveChanges();
 

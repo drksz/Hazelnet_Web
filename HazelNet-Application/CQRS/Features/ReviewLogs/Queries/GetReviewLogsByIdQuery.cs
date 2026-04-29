@@ -17,7 +17,7 @@ public class GetReviewLogsByIdQueryHandler : IQueryHandler<GetReviewLogsByIdQuer
 
     public async Task<ReviewLog> Handle(GetReviewLogsByIdQuery query)
     {
-        var reviewLog = await _reviewLogRepository.Get(query.Id);
+        var reviewLog = await _reviewLogRepository.GetReviewLogByIdAsync(query.Id);
         return reviewLog ?? throw new Exception($"ReviewLog with Id {query.Id} not found.");
     }
 }

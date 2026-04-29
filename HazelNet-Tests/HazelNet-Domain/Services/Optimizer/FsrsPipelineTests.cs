@@ -435,21 +435,21 @@ namespace HazelNet.Tests.Optimizer
                 _byId[history.Id] = history;
             }
 
-            public Task<ReviewHistory?> Get(int reviewHistoryId)
+            public Task<ReviewHistory?> GetReviewHistoryByIdAsync(int reviewHistoryId)
             {
                 _byId.TryGetValue(reviewHistoryId, out var result);
                 return Task.FromResult(result);
             }
 
-            public Task<ReviewHistory?> GetReviewHistoryByCardId(int cardId)
+            public Task<ReviewHistory?> GetReviewHistoryByCardIdAsync(int cardId)
             {
                 _byCardId.TryGetValue(cardId, out var result);
                 return Task.FromResult(result);
             }
 
-            public Task Update(ReviewHistory reviewHistory) => Task.CompletedTask;
-            public Task Delete(int reviewHistoryId) => Task.CompletedTask;
-            public Task Create(ReviewHistory reviewHistory) => Task.CompletedTask;
+            public Task UpdateAsync(ReviewHistory reviewHistory) => Task.CompletedTask;
+            public Task DeleteAsync(int reviewHistoryId) => Task.CompletedTask;
+            public Task CreateAsync(ReviewHistory reviewHistory) => Task.CompletedTask;
         }
     }
 }

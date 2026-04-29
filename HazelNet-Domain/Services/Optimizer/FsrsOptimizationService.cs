@@ -122,10 +122,6 @@ public class FsrsOptimizationService
             var history = await _reviewHistoryRepository.GetReviewHistoryByCardIdAsync(cardId);
             if (history == null) continue;
 
-            //populate the review logs from the DB using the new repository command
-            var logs = await _reviewLogRepository.GetReviewLogsByReviewHistoryIdAsync(history.Id);
-            history.ReviewLogs = logs;
-
             reviewHistories.Add(history);
         }
 

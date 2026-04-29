@@ -46,13 +46,22 @@ public class FsrsTrainer
         var rng = new Random();
         var shuffled = dataset.OrderBy(_ => rng.Next()).ToList();
         int splitIndex = (int)(dataset.Count * 0.8);
-        
+
         var trainSet = shuffled.Take(splitIndex).ToList();
         var valSet = shuffled.Skip(splitIndex).ToList();
 
-        // initial loss to bootstrap validaiton
+        // too few samples to split meaningfully — train on everything, skip validation
+        if (trainSet.Count == 0)
+        {
+            Console.WriteLine($"Warning: only {dataset.Count} sample(s); skipping train/val split.");
+            trainSet = shuffled;
+            valSet = new List<FsrsTrainingSample>();
+        }
+
+        // initial loss to bootstrap validation
         double currentValLoss = CalculateLoss(valSet, _weights);
-        Console.WriteLine($"Initial Validation Loss: {currentValLoss:F5}");
+        if (valSet.Count > 0)
+            Console.WriteLine($"Initial Validation Loss: {currentValLoss:F5}");
 
         for (int e = 0; e < epochs; e++)
         {
@@ -66,8 +75,15 @@ public class FsrsTrainer
                 ApplyAdamStep(grads);
             }
 
-            currentValLoss = CalculateLoss(valSet, _weights);
-            Console.WriteLine($"Epoch {e + 1}/{epochs} | Val Loss: {currentValLoss:F5}");
+            if (valSet.Count > 0)
+            {
+                currentValLoss = CalculateLoss(valSet, _weights);
+                Console.WriteLine($"Epoch {e + 1}/{epochs} | Val Loss: {currentValLoss:F5}");
+            }
+            else
+            {
+                Console.WriteLine($"Epoch {e + 1}/{epochs} | (no val set)");
+            }
         }
 
         sw.Stop();
@@ -80,28 +96,29 @@ public class FsrsTrainer
     private double[] ComputeBatchGradients(List<FsrsTrainingSample> batch)
     {
         double[] grads = new double[21];
-        double epsilon = 1e-4; 
+        double epsilon = 1e-4;
 
-        // parallel finite difference for Gradient Approximation
-        //highkey dont undertand the hard math, just know it approximates gradients much faster and well enough
-        Parallel.For(0, 21, wIdx => 
+        // Each thread works on its own weight snapshot so there is no data race.
+        // The original code wrote directly to _weights, meaning thread N's CalculateLoss
+        // call saw weight N perturbed AND whatever other threads had written at that moment,
+        // producing a corrupted central-difference approximation.
+        double[] baseWeights = (double[])_weights.Clone();
+
+        Parallel.For(0, 21, wIdx =>
         {
-            double originalVal = _weights[wIdx];
-            
-            // perturb Up
-            _weights[wIdx] = originalVal + epsilon;
-            double lossUp = CalculateLoss(batch, _weights);
-            
-            // perturb Down
-            _weights[wIdx] = originalVal - epsilon;
-            double lossDown = CalculateLoss(batch, _weights);
+            double[] wUp   = (double[])baseWeights.Clone();
+            double[] wDown = (double[])baseWeights.Clone();
 
-            // restore
-            _weights[wIdx] = originalVal;
-            
+            wUp[wIdx]   += epsilon;
+            wDown[wIdx] -= epsilon;
+
+            double lossUp   = CalculateLoss(batch, wUp);
+            double lossDown = CalculateLoss(batch, wDown);
+
             // central difference
             grads[wIdx] = (lossUp - lossDown) / (2 * epsilon);
         });
+
         return grads;
     }
     //Calculate MSE loss with L2 Regularization
@@ -134,6 +151,8 @@ public class FsrsTrainer
     //key step, loss calc
     private double CalculateLoss(List<FsrsTrainingSample> data, double[] w)
     {
+        if (data.Count == 0) return 0.0;
+
         double totalLogLoss = 0;
         object lockObj = new object();
 
@@ -192,8 +211,9 @@ public class FsrsTrainer
                     // make sure difficulty stays within safe bounds (1 to 10)
                     d = Math.Clamp(nextD, 1.0, 10.0);
 
-                    // save the new stability for the next loop
-                    s = Math.Max(0.001, nextS);
+                    // save the new stability for the next loop; cap prevents runaway sInc
+                    // (e.g. Pow(s, -w9) exploding when w9 drifts toward its 30-day ceiling)
+                    s = Math.Clamp(nextS, 0.001, 36500.0);
                 }
             }
 

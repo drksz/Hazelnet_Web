@@ -45,6 +45,6 @@ public class GetCardsByDeckIdQueryHandler : IQueryHandler<GetCardsByDeckIdQuery,
 
     public async Task<List<Card>> Handle(GetCardsByDeckIdQuery query)
     {
-        return await _cardRepository.GetCardByDeckId(query.DeckId);
+        return await _cardRepository.GetAllCardByDeckId(query.DeckId);
     }
 }

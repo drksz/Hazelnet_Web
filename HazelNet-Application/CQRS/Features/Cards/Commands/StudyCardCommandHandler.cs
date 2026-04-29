@@ -9,11 +9,13 @@ public class StudyCardCommandHandler : ICommandHandler<StudyCardCommand>
 {
     private ICardRepository _cardRepository;
     private IReviewLogRepository _reviewLogRepository;
+    private IFSRSParametersRepository _fsrsParametersRepository;
 
-    public StudyCardCommandHandler(ICardRepository cardRepository, IReviewLogRepository reviewLogRepository)
+    public StudyCardCommandHandler(ICardRepository cardRepository, IReviewLogRepository reviewLogRepository, IFSRSParametersRepository fsrsParametersRepository)
     {
         _cardRepository = cardRepository;
         _reviewLogRepository = reviewLogRepository;
+        _fsrsParametersRepository = fsrsParametersRepository;
     }
 
     public async Task Handle(StudyCardCommand command)
@@ -23,8 +25,14 @@ public class StudyCardCommandHandler : ICommandHandler<StudyCardCommand>
         {
             throw new Exception($"Card with Id {command.CardId} not found.");
         }
-        
-        var parameters = new Parameters(command.Parameters);
+
+        var fsrsParameters = await _fsrsParametersRepository.GetFSRSParametersByUserIdAsync(command.userId);
+        if (fsrsParameters == null)
+        {
+            throw new Exception($"FSRS parameters for user with Id {command.userId} not found.");
+        }
+
+        var parameters = new Parameters(fsrsParameters);
         var fsrs = new FSRS(parameters);
         var now = DateTime.UtcNow;
 

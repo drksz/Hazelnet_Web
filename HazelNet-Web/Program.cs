@@ -56,6 +56,7 @@ builder.Services.AddScoped<IDeckRepository, DeckRepository>();
 builder.Services.AddScoped<ICardRepository, CardRepository>();
 builder.Services.AddScoped<IReviewHistoryRepository, ReviewHistoryRepository>();
 builder.Services.AddScoped<IReviewLogRepository, ReviewLogRepository>();
+builder.Services.AddScoped<IFSRSParametersRepository, FSRSParametersRepository>();
 
 builder.Services.AddScoped<ICurrentUserService, CurrentUserService>();
 

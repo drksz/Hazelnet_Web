@@ -1,5 +1,4 @@
 ﻿@using HazelNet_Application.CQRS.Abstractions
-@using HazelNet_Application.CQRS.Features.Cards.Commands
 @using HazelNet_Application.CQRS.Features.Decks.Commands
 @using HazelNet_Web.ViewModel
 
@@ -7,7 +6,7 @@
 @inject ISnackbar Snackbar
 @inject IDialogService DialogService
 @inject ICommandHandler<UpdateDeckCommand> UpdateDeckHandler
-@inject ICommandHandler<CreateDeckCommand> CreateDeckCommandHandler
+@inject ICommandHandler<ClearCardsInDeckCommand> ClearCardsInDeckHandler
 
 <MudCard Elevation="10" 
                          Style=" min-height: 150px; width: 100%; 
@@ -69,7 +68,7 @@
                                             DropShadow="false"
                                             OpenOnMouseHover="false"
                                             CloseOnMenuItemClicked="true"
-                                            DampenItemsBackgroundColor="false">
+                                            DampenItemsBackgroundColor="true">
                                     
                                     
                                     <MudFabMenuItem Label="Delete"
@@ -81,17 +80,18 @@
                                     <MudFabMenuItem Label="Clear"
                                                     StartIcon="@Icons.Material.Filled.ClearAll"
                                                     Size="Size.Medium"
-                                                    Color="Color.Dark"/>
+                                                    Color="Color.Dark"
+                                                    OnClick="@(() => ClearDeckOfCards(Deck.Id))"/>
                                     
                                     <MudFabMenuItem Label="Edit"
                                                     StartIcon="@Icons.Material.Filled.Edit"
                                                     Size="Size.Medium"
                                                     Color="Color.Dark"
                                                     OnClick="@EditDeck"/>
-                                    <MudFabMenuItem Label="Manage Cards"
-                                                    StartIcon="@Icons.Material.Filled.AddCard"
+                                    <MudFabMenuItem Label="Cards"
+                                                    StartIcon="@Icons.Material.Filled.CreditCard"
                                                     Size="Size.Medium"
-                                                    Color="Color.Info"
+                                                    Color="Color.Primary"
                                                     Style="white-space: nowrap;"
                                                     OnClick="@ManageCard"/>
                                 </MudFabMenu>
@@ -108,7 +108,7 @@
     [Parameter] public DeckViewModel Deck { get; set; }
     [Parameter] public EventCallback<int> OnDeckDeleted { get; set; }
     [Parameter] public EventCallback<UpdateDeckCommand> OnDeckUpdated { get; set; }
-    [Parameter] public EventCallback OnManageCard { get; set; }
+    [Parameter] public EventCallback OnDeckCleared { get; set; }
 
     private int _dueToday = 0;
 
@@ -230,9 +230,8 @@
 
             if (!result.Canceled)
             {
-                
-                // Notify parent
-                await OnManageCard.InvokeAsync();
+
+                StateHasChanged();
             }
         }
         catch (UnauthorizedAccessException ex)
@@ -245,7 +244,31 @@
         }
         catch (Exception)
         {
-            Snackbar.Add("An error occurred while deleting the deck.", Severity.Error);
+            Snackbar.Add("An error occurred while managing the cards.", Severity.Error);
+        }
+    }
+
+    public async Task ClearDeckOfCards(int id)
+    {
+        
+        try
+        {
+            var command = new ClearCardsInDeckCommand(id);
+            await ClearCardsInDeckHandler.Handle(command);
+            Snackbar.Add($"{Deck.Name} successfully cleared.", Severity.Info);
+            await OnDeckCleared.InvokeAsync();
+        }
+        catch (UnauthorizedAccessException ex)
+        {
+            Snackbar.Add(ex.Message, Severity.Warning);
+        }
+        catch (KeyNotFoundException ex)
+        {
+            Snackbar.Add(ex.Message, Severity.Error);
+        }
+        catch (Exception)
+        {
+            Snackbar.Add("An error occurred while clearing the deck.", Severity.Error);
         }
     }
 }

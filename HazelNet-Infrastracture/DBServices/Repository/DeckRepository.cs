@@ -48,4 +48,9 @@ public class DeckRepository : IDeckRepository
          _context.Decks.Add(deck);
         await _context.SaveChangesAsync();
     }
+
+    public async Task ClearAllCardsInDeckAsync(int deckId)
+    {
+        var cards = await _context.Cards.Where(c => c.DeckId == deckId).ExecuteDeleteAsync();
+    }
 }

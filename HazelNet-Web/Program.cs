@@ -70,9 +70,11 @@ builder.Services.AddScoped<IQueryHandler<GetAllCardsInDeckQuery, List<Card>>, Ge
 builder.Services.AddScoped<ICommandHandler<CreateDeckCommand>, CreateDeckCommandHandler>();
 builder.Services.AddScoped<ICommandHandler<DeleteDeckCommand>, DeleteDeckCommandHandler>();
 builder.Services.AddScoped<ICommandHandler<UpdateDeckCommand>, UpdateDeckCommandHandler>();
+builder.Services.AddScoped<ICommandHandler<ClearCardsInDeckCommand>, ClearCardsInDeckCommandCommandHandler>();
 
 builder.Services.AddScoped<ICommandHandler<CreateCardCommand>, CreateCardCommandHandler>();
 builder.Services.AddScoped<ICommandHandler<UpdateCardCommand>, UpdateCardCommandHandler>();
+builder.Services.AddScoped<ICommandHandler<DeleteCardCommand>, DeleteCardCommandHandler>();
 
 
 builder.Services.AddHttpClient("LocalApi", (sp, client) =>

@@ -19,7 +19,7 @@ public class GetReviewLogsByCardIdQueryHandler : IQueryHandler<GetReviewLogsByCa
 
     public async Task<IEnumerable<ReviewLog>> Handle(GetReviewLogsByCardIdQuery query)
     {
-        var card = await _cardRepository.Get(query.CardId);
+        var card = await _cardRepository.GetCardByIdAsync(query.CardId);
         if (card == null)
         {
             throw new Exception($"Card with Id {query.CardId} not found.");
@@ -29,7 +29,7 @@ public class GetReviewLogsByCardIdQueryHandler : IQueryHandler<GetReviewLogsByCa
         {
             throw new Exception($"ReviewHistory for Card with Id {query.CardId} not found.");
         }
-        var reviewLogs = await _reviewLogRepository.GetReviewLogsByReviewHistoryId(reviewHistory.Id);
+        var reviewLogs = await _reviewLogRepository.GetReviewLogsByReviewHistoryIdAsync(reviewHistory.Id);
         return reviewLogs;
     }
 }

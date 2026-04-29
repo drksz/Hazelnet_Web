@@ -24,7 +24,7 @@ public class UpdateCardCommandHandler :  ICommandHandler<UpdateCardCommand>
          card.BackOfCard = command.BackOfCard;
          card.DeckId = command.DeckId;
          
-         await _cardRepository.UpdateCardAsync(card);
+         await _cardRepository.UpdateAsync(card);
         
     }
 }

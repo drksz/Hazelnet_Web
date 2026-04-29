@@ -13,6 +13,7 @@ public class Card
     public Deck Deck { get; set; } =  new Deck();
     
     public ReviewHistory ReviewHistory { get; set; }
+    public int ReviewHistoryId { get; set; }
     
     //FSRS PROPERTIES
     public DateTime Due { get; set; }

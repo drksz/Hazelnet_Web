@@ -119,9 +119,14 @@ public class FsrsOptimizationService
         var reviewHistories = new List<ReviewHistory>();
         foreach (var cardId in cardIdList)
         {
-            var history = await _reviewHistoryRepository.GetReviewHistoryByCardId(cardId);
-            if (history != null)
-                reviewHistories.Add(history);
+            var history = await _reviewHistoryRepository.GetReviewHistoryByCardIdAsync(cardId);
+            if (history == null) continue;
+
+            //populate the review logs from the DB using the new repository command
+            var logs = await _reviewLogRepository.GetReviewLogsByReviewHistoryIdAsync(history.Id);
+            history.ReviewLogs = logs;
+
+            reviewHistories.Add(history);
         }
 
         if (reviewHistories.Count == 0)

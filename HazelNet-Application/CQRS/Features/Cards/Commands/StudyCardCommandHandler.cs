@@ -24,7 +24,7 @@ public class StudyCardCommandHandler : ICommandHandler<StudyCardCommand>
             throw new Exception($"Card with Id {command.CardId} not found.");
         }
         
-        var parameters = new Parameters();
+        var parameters = new Parameters(command.Parameters);
         var fsrs = new FSRS(parameters);
         var now = DateTime.UtcNow;
 
@@ -32,8 +32,8 @@ public class StudyCardCommandHandler : ICommandHandler<StudyCardCommand>
         var reviewLog = result.ReviewLog;
         reviewLog.ReviewHistoryId = card.ReviewHistory.Id;
 
-        await _reviewLogRepository.Create(reviewLog);
-        await _cardRepository.UpdateCardAsync(card);
+        await _reviewLogRepository.CreateAsync(reviewLog);
+        await _cardRepository.UpdateAsync(card);
 
     }
 }

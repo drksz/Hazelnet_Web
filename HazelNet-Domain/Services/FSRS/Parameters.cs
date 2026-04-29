@@ -22,6 +22,21 @@ public class Parameters
     {
         W = Weights.Default();
     }
+    public Parameters (double[] weights)
+    {
+        W = weights;
+    }
+    public Parameters(FSRSParameters fsrsParameters)
+    {
+        RequestRetention = fsrsParameters.RequestRetention;
+        MaximumInterval = fsrsParameters.MaximumInterval;
+        W = fsrsParameters.W;
+        Decay = fsrsParameters.Decay;
+        Factor = fsrsParameters.Factor;
+        EnableShortTerm = fsrsParameters.EnableShortTerm;
+        EnableFuzz = fsrsParameters.EnableFuzz;
+        seed = fsrsParameters.seed;
+    }
 
     //parameters config
     public static Parameters DefaultParam()

@@ -15,5 +15,10 @@ public class CardsEntityTypeConfiguration :IEntityTypeConfiguration<Card>
         builder.HasOne(c => c.Deck)
             .WithMany(d => d.Cards)
             .HasForeignKey(d => d.DeckId);
+        builder.HasOne(c => c.ReviewHistory)
+            .WithOne(rh => rh.Card)
+            .HasForeignKey<ReviewHistory>(rh => rh.CardId)
+            .OnDelete(DeleteBehavior.Cascade);
+
     }
 }

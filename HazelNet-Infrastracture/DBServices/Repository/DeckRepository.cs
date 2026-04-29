@@ -17,37 +17,40 @@ public class DeckRepository : IDeckRepository
         _context = context;
     }
 
-    public async Task<Deck?> GetAsync(int deckId)
+    public async Task<Deck?> GetDeckByIdAsync(int deckId)
     {
-        return await _context.Decks.FindAsync(deckId);
+        return await _context.Decks.FirstOrDefaultAsync(d => d.Id == deckId);
     }
+    
 
 
-    public async Task<List<Deck>> GetDeckByUserIdAsync(int userId)
+    public async Task<List<Deck>> GetAllDeckByUserIdAsync(int userId)
     {
         return await _context.Decks
             .Where(d => d.UserId == userId)
             .ToListAsync();
     }
-    public async Task UpdateAsync(Deck deck)
+
+    public async Task UpdateDeckAsync(Deck deck)
     {
         _context.Decks.Update(deck);
         await _context.SaveChangesAsync();
     }
 
-    public async Task DeleteAsync(int deckId)
+    public async Task DeleteDeckAsync(Deck _deck)
     {
-        var deck = await GetAsync(deckId);
-        if (deck != null)
-        {
-            _context.Decks.Remove(deck);
-            await _context.SaveChangesAsync();
-        }
+       _context.Decks.Remove(_deck);
+       await _context.SaveChangesAsync();
     }
 
     public async Task CreateAsync(Deck deck)
     {
-        await _context.Decks.AddAsync(deck);
+         _context.Decks.Add(deck);
         await _context.SaveChangesAsync();
+    }
+
+    public async Task ClearAllCardsInDeckAsync(int deckId)
+    {
+        var cards = await _context.Cards.Where(c => c.DeckId == deckId).ExecuteDeleteAsync();
     }
 }

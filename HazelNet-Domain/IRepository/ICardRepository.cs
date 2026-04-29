@@ -4,9 +4,9 @@ namespace HazelNet_Domain.IRepository;
 
 public interface ICardRepository
 {
-    Task<Card?> Get(int cardId);
-    Task<List<Card>> GetCardByDeckId(int deckId);
-    Task Update(Card card);
-    Task Delete(int cardId);
-    Task Create(Card card);
+    Task<Card?> GetCardByIdAsync(int cardId);
+    Task<List<Card>> GetAllCardByDeckId(int deckId);
+    Task UpdateCardAsync(Card card);
+    Task DeleteCardByIdAsync(int cardId);
+    Task CreateCardAsync(Card card);
 }

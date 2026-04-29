@@ -7,13 +7,16 @@
 @using HazelNet_Application.CQRS.Features.Decks.Queries
 @using HazelNet_Application.CQRS.Abstractions
 @using HazelNet_Application.CQRS.Features.Decks.Commands
+@using HazelNet_Web.Features.Deck.Components
 @using HazelNet_Web.ViewModel
 @using Microsoft.AspNetCore.Components.Authorization
 
 @inject AuthenticationStateProvider AuthenticationStateProvider
-@inject IQueryHandler<GetDecksQuery, List<DeckViewModel>> GetDecksHandler
-@inject ICommandHandler<CreateDeckCommand, int> CreateDeckHandler
+@inject IQueryHandler<GetDecksVMQuery, List<DeckViewModel>> GetDecksVMHandler
+@inject ICommandHandler<CreateDeckCommand> CreateDeckHandler
 @inject IDialogService DialogService
+@inject ISnackbar Snackbar
+
 
 @attribute [Authorize]
 
@@ -29,7 +32,7 @@
         <MudItem>
             <MudButton Variant="Variant.Outlined" Size="Size.Large"
                        StartIcon="@Icons.Material.Filled.Add"
-                       OnClick="OpenCreateDeckDialog">
+                       OnClick="CreateNewDeck">
                 New Deck
             </MudButton>
         </MudItem>
@@ -110,10 +113,26 @@
    <!-- Card Component-->
     <MudGrid Spacing="5" Justify="Justify.Center" Class="mt-5 px-20">
 
+        @if (_NumOfDecks == 0)
+        {
+            <MudStack Spacing="3" Class="ma-10 pa-10"
+                      AlignItems="AlignItems.Center" Justify="Justify.Center">
+                <MudText Typo="Typo.h2" Color="Color.Primary">
+                    No decks yet.
+                </MudText>
+                <MudText Typo="Typo.body1">
+                    Create your first deck to start studying.
+                </MudText>    
+            </MudStack>
+            
+        }
         @foreach (var deck in _DeckList)
         {
-            <MudItem sm="12" md="4" lg="3" Class="d-flex">
-                <DeckView Deck="deck" />
+            <MudItem @key="deck.Id" sm="12" md="4" lg="3" Class="d-flex">
+                <DeckView Deck="deck" 
+                          OnDeckDeleted="RemoveDeckFromList"
+                          OnDeckUpdated="UpdateDeckInList"
+                          OnDeckCleared="ClearedDeckUpdate"/>
             </MudItem>
         }
 
@@ -160,13 +179,14 @@
             }
             if (!int.TryParse(_UserId, out int parsedUserId)) return;
             
-            _DeckList = await GetDecksHandler.Handle(new GetDecksQuery(parsedUserId));
+            _DeckList = await GetDecksVMHandler.Handle(new GetDecksVMQuery(parsedUserId));
             _NumOfDecks = _DeckList.Count;
             SortDecks();
+            
         }
     }
     
-    private async Task OpenCreateDeckDialog()
+    private async Task CreateNewDeck()
     {
         if (!int.TryParse(_UserId, out int parsedUserId)) return;
         
@@ -189,9 +209,14 @@
 
             await CreateDeckHandler.Handle(command);
             
-            _DeckList = await GetDecksHandler.Handle(new GetDecksQuery(parsedUserId));
+           
+            
+            _DeckList = await GetDecksVMHandler.Handle(new GetDecksVMQuery(parsedUserId));
             _NumOfDecks = _DeckList.Count;
+            
+            Snackbar.Add("Deck successfully created", Severity.Success);
             StateHasChanged();
+            
         }
     }
 
@@ -208,6 +233,34 @@
         };
     }
     
+    private void RemoveDeckFromList(int deletedDeckId)
+    {
+        _DeckList = _DeckList
+            .Where(d => d.Id != deletedDeckId)
+            .ToList();
+
+        _NumOfDecks = _DeckList.Count;
+
+        StateHasChanged();
+    }
+
+    private void UpdateDeckInList(UpdateDeckCommand updated)
+    {
+        var deck = _DeckList.FirstOrDefault(d => d.Id == updated.DeckId);
+
+        if (deck != null)
+        {
+            deck.Name = updated.DeckName;
+            deck.Description = updated.DeckDescription;
+        }
+
+        StateHasChanged();
+    }
+
+    private void ClearedDeckUpdate()
+    {
+        StateHasChanged();
+    }
     
     
 }

@@ -1,25 +1,27 @@
 using System.Security.Claims;
 using HazelNet_Application.Auth;
 using HazelNet_Application.CQRS.Abstractions;
+using HazelNet_Application.CQRS.Abstractions.Identity;
+using HazelNet_Application.CQRS.Features.Cards.Commands;
+using HazelNet_Application.CQRS.Features.Cards.Queries;
 using HazelNet_Application.CQRS.Features.Decks.Commands;
 using HazelNet_Application.CQRS.Features.Decks.Queries;
 using HazelNet_Application.Interface;
 using HazelNet_Domain.IRepository;
+using HazelNet_Domain.Models;
 using HazelNet_Infrastracture.Command;
 using MudBlazor.Services;
 using HazelNet_Web.Core;
 using HazelNet_Infrastracture.DBContext;
 using HazelNet_Infrastracture.DBServices.Repository;
 using HazelNet_Web.Features.Account;
-using HazelNet_Web.Features.Private;
+using HazelNet_Web.Services;
 using HazelNet_Web.ViewModel;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Components;
-using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Metadata.Internal;
 using IUserRepository = HazelNet_Application.Interface.IUserRepository;
 
 
@@ -51,14 +53,29 @@ builder.Services.AddCascadingAuthenticationState();
 
 builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<IDeckRepository, DeckRepository>();
+builder.Services.AddScoped<ICardRepository, CardRepository>();
+builder.Services.AddScoped<IReviewHistoryRepository, ReviewHistoryRepository>();
+builder.Services.AddScoped<IReviewLogRepository, ReviewLogRepository>();
+
+builder.Services.AddScoped<ICurrentUserService, CurrentUserService>();
 
 builder.Services.AddScoped<IPasswordHasher, PasswordHasher>();
 builder.Services.AddScoped<RegisterHandler>();
 builder.Services.AddScoped<LoginHandler>();
 builder.Services.AddHttpClient();
 
-builder.Services.AddScoped<IQueryHandler<GetDecksQuery, List<DeckViewModel>>, GetDecksQueryHandler>();
-builder.Services.AddScoped<ICommandHandler<CreateDeckCommand, int>, CreateDeckCommandHandler>();
+builder.Services.AddScoped<IQueryHandler<GetDecksVMQuery, List<DeckViewModel>>, GetDecksVMQueryHandler>();
+builder.Services.AddScoped<IQueryHandler<GetAllCardsInDeckQuery, List<Card>>, GetAllCardsInDeckQueryHandler>();
+
+builder.Services.AddScoped<ICommandHandler<CreateDeckCommand>, CreateDeckCommandHandler>();
+builder.Services.AddScoped<ICommandHandler<DeleteDeckCommand>, DeleteDeckCommandHandler>();
+builder.Services.AddScoped<ICommandHandler<UpdateDeckCommand>, UpdateDeckCommandHandler>();
+builder.Services.AddScoped<ICommandHandler<ClearCardsInDeckCommand>, ClearCardsInDeckCommandCommandHandler>();
+
+builder.Services.AddScoped<ICommandHandler<CreateCardCommand>, CreateCardCommandHandler>();
+builder.Services.AddScoped<ICommandHandler<UpdateCardCommand>, UpdateCardCommandHandler>();
+builder.Services.AddScoped<ICommandHandler<DeleteCardCommand>, DeleteCardCommandHandler>();
+
 
 builder.Services.AddHttpClient("LocalApi", (sp, client) =>
 {
@@ -101,7 +118,7 @@ app.MapPost("/register", async (
        return Results.Ok(new { success = true });
    else
        return Results.BadRequest(new { error = "Email already exists" });
-});
+}).DisableAntiforgery();
 
 app.MapPost("/login", async (
     HttpContext httpContext,

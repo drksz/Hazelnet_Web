@@ -9,7 +9,7 @@ public class ReviewHistoryEntityTypeConfiguration:  IEntityTypeConfiguration<Rev
     public void Configure(EntityTypeBuilder<ReviewHistory> builder)
     {
         builder.HasKey(h => h.Id);
-        builder.Property(h => h.Id).ValueGeneratedNever();
+        builder.Property(h => h.Id).ValueGeneratedOnAdd();
 
         builder.HasMany(h => h.ReviewLogs)
             .WithOne(l => l.ReviewHistory)

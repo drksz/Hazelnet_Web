@@ -5,23 +5,24 @@ using HazelNet_Web.ViewModel;
 
 namespace HazelNet_Application.CQRS.Features.Decks.Queries;
 
-public class GetDecksQueryHandler 
-    : IQueryHandler<GetDecksQuery, List<DeckViewModel>>
+public class GetDecksVMQueryHandler 
+    : IQueryHandler<GetDecksVMQuery, List<DeckViewModel>>
 {
     private readonly IDeckRepository _deckRepository;
-    public GetDecksQueryHandler(IDeckRepository deckRepository)
+    public GetDecksVMQueryHandler(IDeckRepository deckRepository)
     {
         _deckRepository = deckRepository;
     }
         
-    public async Task<List<DeckViewModel>> Handle(GetDecksQuery query)
+    public async Task<List<DeckViewModel>> Handle(GetDecksVMQuery query)
     {
 
-        var decks = await _deckRepository.GetDeckByUserIdAsync(query.UserId);
+        var decks = await _deckRepository.GetAllDeckByUserIdAsync(query.UserId);
 
 
         var result = decks.Select(d => new DeckViewModel
         {
+            Id = d.Id,
             Name = d.DeckName,
             Description = d.DeckDescription,
             TotalNumberOfCards = d.Cards.Count,

@@ -2,8 +2,4 @@
 
 namespace HazelNet_Application.CQRS.Features.Decks.Commands;
 
-public record CreateDeckCommand
-(
-    string DeckName,
-    string? DeckDescription
-) : ICommand;
+public record ClearCardsInDeckCommand(int Id): ICommand;

@@ -11,6 +11,7 @@ public class ApplicationDbContext : DbContext
     public DbSet<ReviewHistory> ReviewHistory { get; set; }
     public DbSet<ReviewLog> ReviewLogs { get; set; }
     public DbSet<User> User { get; set; }
+    public DbSet<FSRSParameters> FSRSParameters { get; set; }
     
     public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
         :base(options) {}

@@ -21,5 +21,10 @@ public class UserEntityTypeConfiguration : IEntityTypeConfiguration<User>
         builder.HasMany(c => c.Decks)
             .WithOne(d => d.User)
             .HasForeignKey(d => d.UserId);
+        
+        builder.HasOne(c => c.FSRSParameters)
+            .WithOne(p => p.User)
+            .HasForeignKey<FSRSParameters>(p => p.UserId)
+            .OnDelete(DeleteBehavior.Cascade);
     }
 }

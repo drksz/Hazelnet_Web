@@ -7,7 +7,7 @@ public class User
     public string EmailAddress { get; set; }
     public string PasswordHash { get; set; }
     
-    public FSRSParameters FSRSParameters { get; set; }
-
+    public FSRSParameters? FSRSParameters { get; set; }
+    public int? FSRSParametersId { get; set; }  
     public List<Deck>? Decks { get; set; } =  new List<Deck>();
 }

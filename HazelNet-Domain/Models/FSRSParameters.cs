@@ -2,7 +2,7 @@ namespace HazelNet_Domain.Models;
 
 public class FSRSParameters
 {
-    
+    public int Id {get; set;}
     public double RequestRetention { get; set; }
     public double MaximumInterval { get; set; }
     public double[] W { get; set; }
@@ -14,6 +14,9 @@ public class FSRSParameters
 
     private const double MinStability = 0.01;
     private const double MinRetrievability = 0.0001;
+
+    public User? User {get; set;}
+    public int? UserId {get; set;}
 
     public FSRSParameters()
     {

@@ -34,6 +34,5 @@ public class CreateCardCommandHandler : ICommandHandler<CreateCardCommand>
         };
 
         await _cardRepository.CreateAsync(card);
-        await _reviewHistoryRepository.CreateAsync(card.ReviewHistory);
     }
 }

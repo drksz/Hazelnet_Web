@@ -29,7 +29,7 @@ public class GetReviewLogsByCardIdQueryHandler : IQueryHandler<GetReviewLogsByCa
         {
             throw new Exception($"ReviewHistory for Card with Id {query.CardId} not found.");
         }
-        var reviewLogs = await _reviewLogRepository.GetReviewLogsByReviewHistoryId(reviewHistory.Id);
+        var reviewLogs = await _reviewLogRepository.GetReviewLogsByReviewHistoryIdAsync(reviewHistory.Id);
         return reviewLogs;
     }
 }

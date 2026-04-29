@@ -15,27 +15,27 @@ public class ReviewLogRepository : IReviewLogRepository
         _context = context;
     }
 
-    public async Task<ReviewLog?> Get(int reviewLogId)
+    public async Task<ReviewLog?> GetReviewLogByIdAsync(int reviewLogId)
     {
         return await _context.ReviewLogs.FindAsync(reviewLogId);
     }
 
-    public async Task<List<ReviewLog>> GetReviewLogsByReviewHistoryId(int reviewHistoryId)
+    public async Task<List<ReviewLog>> GetReviewLogsByReviewHistoryIdAsync(int reviewHistoryId)
     {
         return await _context.ReviewLogs
             .Where(rl => rl.ReviewHistoryId == reviewHistoryId)
             .ToListAsync();
     }  
 
-    public async Task Update(ReviewLog reviewLog)
+    public async Task UpdateAsync(ReviewLog reviewLog)
     {
         _context.ReviewLogs.Update(reviewLog);
         await _context.SaveChangesAsync();
     }
 
-    public async Task Delete(int reviewLogId)
+    public async Task DeleteAsync(int reviewLogId)
     {
-        var reviewLog = await Get(reviewLogId);
+        var reviewLog = await GetReviewLogByIdAsync(reviewLogId);
         if (reviewLog != null)
         {
             _context.ReviewLogs.Remove(reviewLog);
@@ -43,7 +43,7 @@ public class ReviewLogRepository : IReviewLogRepository
         }
     }
 
-    public async Task Create(ReviewLog reviewLog)
+    public async Task CreateAsync(ReviewLog reviewLog)
     {
         await _context.ReviewLogs.AddAsync(reviewLog);
         await _context.SaveChangesAsync();

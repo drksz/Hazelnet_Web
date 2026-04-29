@@ -15,26 +15,26 @@ public class ReviewHistoryRepository : IReviewHistoryRepository
         _context = context;
     }
 
-    public async Task<ReviewHistory?> Get(int reviewHistoryId)
+    public async Task<ReviewHistory?> GetReviewHistoryByIdAsync(int reviewHistoryId)
     {
         return await _context.ReviewHistory.FindAsync(reviewHistoryId);
     }
 
-    public async Task<ReviewHistory?> GetReviewHistoryByCardId(int cardId)
+    public async Task<ReviewHistory?> GetReviewHistoryByCardIdAsync(int cardId)
     {
         return await _context.ReviewHistory
             .FirstOrDefaultAsync(rh => rh.CardId == cardId);
     }
 
-    public async Task Update(ReviewHistory reviewHistory)
+    public async Task UpdateAsync(ReviewHistory reviewHistory)
     {
         _context.ReviewHistory.Update(reviewHistory);
         await _context.SaveChangesAsync();
     }
 
-    public async Task Delete(int reviewHistoryId)
+    public async Task DeleteAsync(int reviewHistoryId)
     {
-        var reviewHistory = await Get(reviewHistoryId);
+        var reviewHistory = await GetReviewHistoryByIdAsync(reviewHistoryId);
         if (reviewHistory != null)
         {
             _context.ReviewHistory.Remove(reviewHistory);
@@ -42,7 +42,7 @@ public class ReviewHistoryRepository : IReviewHistoryRepository
         }
     }
 
-    public async Task Create(ReviewHistory reviewHistory)
+    public async Task CreateAsync(ReviewHistory reviewHistory)
     {
         await _context.ReviewHistory.AddAsync(reviewHistory);
         await _context.SaveChangesAsync();

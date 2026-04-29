@@ -1,4 +1,4 @@
-﻿using HazelNet_Application.CQRS.Abstractions;
+using HazelNet_Application.CQRS.Abstractions;
 using HazelNet_Domain.IRepository;
 using HazelNet_Domain.Models;
 
@@ -45,6 +45,6 @@ public class GetCardsByDeckIdQueryHandler : IQueryHandler<GetCardsByDeckIdQuery,
 
     public async Task<List<Card>> Handle(GetCardsByDeckIdQuery query)
     {
-        return await _cardRepository.GetAllCardByDeckId(query.DeckId);
+        return await _cardRepository.GetAllCardByDeckIdAsync(query.DeckId);
     }
 }

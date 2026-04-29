@@ -200,7 +200,7 @@ namespace HazelNet.Tests.Optimizer
 
             for (int cardId = 1; cardId <= 5; cardId++)
             {
-                var history = new ReviewHistory(cardId) { Id = cardId };
+                var history = new ReviewHistory { CardId = cardId, Id = cardId };
                 reviewHistoryRepo.AddByCardId(cardId, history);
                 logsByHistoryId[cardId] = GenerateReviewLogs(count: 3, historyId: cardId);
             }
@@ -258,7 +258,7 @@ namespace HazelNet.Tests.Optimizer
             // History exists but the delegate returns no matching logs - exercises the new
             // diagnostic safety check that fires before reaching the trainer.
             var reviewHistoryRepo = new StubReviewHistoryRepository();
-            var history = new ReviewHistory(1) { Id = 1 };
+            var history = new ReviewHistory { CardId = 1, Id = 1 };
             reviewHistoryRepo.AddByCardId(1, history);
 
             // empty dictionary - delegate finds nothing
@@ -331,7 +331,7 @@ namespace HazelNet.Tests.Optimizer
 
             for (int cardId = 1; cardId <= 4; cardId++)
             {
-                var history = new ReviewHistory(cardId) { Id = cardId };
+                var history = new ReviewHistory { CardId = cardId, Id = cardId };
                 reviewHistoryRepo.AddByCardId(cardId, history);
                 logsByHistoryId[cardId] = GenerateReviewLogs(count: 5, historyId: cardId);
             }
@@ -378,7 +378,7 @@ namespace HazelNet.Tests.Optimizer
 
         private ReviewHistory CreateReviewHistory(int cardId, int reviewCount)
         {
-            var history = new ReviewHistory(cardId);
+            var history = new ReviewHistory { CardId = cardId };
             var rng = new Random(cardId);
             var now = DateTime.Now;
 

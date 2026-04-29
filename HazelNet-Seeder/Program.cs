@@ -105,7 +105,7 @@ var logs = new List<ReviewLog>();
 
 foreach (var card in cards)
 {
-    var history = new ReviewHistory(card.Id) { Id = historyId++ };
+    var history = new ReviewHistory { CardId = card.Id, Id = historyId++ };
     histories.Add(history);
     db.ReviewHistory.Add(history);
 

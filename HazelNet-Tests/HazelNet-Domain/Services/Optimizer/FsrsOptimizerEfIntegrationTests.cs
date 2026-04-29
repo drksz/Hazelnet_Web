@@ -257,7 +257,7 @@ namespace HazelNet.Tests.Optimizer
             // ordering within a batch is not guaranteed, and the FK check fires before
             // the parent row is visible.
             var histories = savedCards
-                .Select(card => new ReviewHistory(card.Id))
+                .Select(card => new ReviewHistory { CardId = card.Id })
                 .ToList();
             ctx.ReviewHistory.AddRange(histories);
             ctx.SaveChanges();

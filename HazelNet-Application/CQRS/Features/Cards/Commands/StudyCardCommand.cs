@@ -7,7 +7,7 @@ namespace HazelNet_Application.CQRS.Features.Cards.Commands;
 
 public record StudyCardCommand
 (
-    FSRSParameters Parameters, //pass user's fsrs parameter here
+    int userId,
     int CardId,
     Rating Rating
 ) : ICommand;

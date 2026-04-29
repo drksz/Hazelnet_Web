@@ -15,7 +15,7 @@ public class UpdateCardCommandHandler :  ICommandHandler<UpdateCardCommand>
 
     public async Task Handle(UpdateCardCommand command)
     {
-        var card = await _cardRepository.Get(command.Id);
+        var card = await _cardRepository.GetCardByIdAsync(command.Id);
         
         if (card == null)
             throw new NullReferenceException("Card not found");
@@ -24,7 +24,7 @@ public class UpdateCardCommandHandler :  ICommandHandler<UpdateCardCommand>
          card.BackOfCard = command.BackOfCard;
          card.DeckId = command.DeckId;
          
-         await _cardRepository.Update(card);
+         await _cardRepository.UpdateAsync(card);
         
     }
 }

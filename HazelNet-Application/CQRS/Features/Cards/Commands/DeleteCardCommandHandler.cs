@@ -36,7 +36,7 @@ public class DeleteCardCommandHandler :  ICommandHandler<DeleteCardCommand>
         }
 
         // 3. Delete
-        await _cardRepository.DeleteCardByIdAsync(command.CardId);
+        await _cardRepository.DeleteAsync(command.CardId);
     }
 
     

@@ -6,9 +6,9 @@ namespace HazelNet_Domain.IRepository;
 
 public interface IReviewLogRepository
 {
-    Task<ReviewLog?> Get(int reviewLogId);
-    Task<List<ReviewLog>> GetReviewLogsByReviewHistoryId(int reviewHistoryId);
-    Task Update(ReviewLog reviewLog);
-    Task Delete(int reviewLogId);
-    Task Create(ReviewLog reviewLog);
+    Task<ReviewLog?> GetReviewLogByIdAsync(int reviewLogId);
+    Task<List<ReviewLog>> GetReviewLogsByReviewHistoryIdAsync(int reviewHistoryId);
+    Task UpdateAsync(ReviewLog reviewLog);
+    Task DeleteAsync(int reviewLogId);
+    Task CreateAsync(ReviewLog reviewLog);
 }

@@ -21,7 +21,7 @@ public class GetCardByIdQueryHandler : IQueryHandler<GetCardByIdQuery, Card>
 
     public async Task<Card> Handle(GetCardByIdQuery query)
     {
-        var card = await _cardRepository.Get(query.Id);
+        var card = await _cardRepository.GetCardByIdAsync(query.Id);
         return card ?? throw new InvalidOperationException($"Card with id {query.Id} not found.");
     }
 }
@@ -45,6 +45,6 @@ public class GetCardsByDeckIdQueryHandler : IQueryHandler<GetCardsByDeckIdQuery,
 
     public async Task<List<Card>> Handle(GetCardsByDeckIdQuery query)
     {
-        return await _cardRepository.GetAllCardByDeckId(query.DeckId);
+        return await _cardRepository.GetAllCardByDeckIdAsync(query.DeckId);
     }
 }

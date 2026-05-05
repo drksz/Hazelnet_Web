@@ -1,0 +1,225 @@
+﻿@using HazelNet_Application.CQRS.Abstractions
+@using HazelNet_Application.CQRS.Abstractions.Identity
+@using HazelNet_Application.CQRS.Features.Cards.Commands
+@using HazelNet_Application.CQRS.Features.Cards.Queries
+@using HazelNet_Domain.Models
+@inject ISnackbar Snackbar
+@inject IQueryHandler<GetAllDueCardsQuery, List<Card>> GetAllDueCardsQueryHandler;
+@inject ICommandHandler<StudyCardCommand> StudyCardCommandHandler;
+@inject ICurrentUserService CurrentUserService;
+
+
+<MudDialog>
+    <TitleContent>
+        @DeckName
+    </TitleContent>
+    
+    <DialogContent>
+        <MudGrid>
+            <MudItem sm="12">
+                <MudStack Row="true" 
+                          AlignItems="AlignItems.Center" 
+                          Justify="Justify.SpaceBetween"
+                          Spacing="5">
+                    <MudText Typo="Typo.h6">
+                        Progress
+                    </MudText>
+                    
+                    <MudText Typo="Typo.h6">
+                        @_progress/@_numberOfDueCards
+                    </MudText>
+                </MudStack>               
+            </MudItem>
+            
+            <MudItem sm="12">
+                <MudProgressLinear 
+                    Color="Color.Info" 
+                    Value="@_progress" 
+                    Size="Size.Small"
+                    Min="0"
+                    Max="@_numberOfDueCards"
+                    Rounded="true"/>
+            </MudItem>
+        </MudGrid>
+        
+        <MudDivider
+            DividerType="DividerType.FullWidth"
+            Class="my-5"/>
+        
+        <MudPaper Elevation="0"
+                  Class="pa-5 ma-5">
+            
+            @if (_isLoading)
+            {
+                <MudProgressCircular Indeterminate="true" Class="d-flex mx-auto my-10"/>
+            }
+            else if (_hasNoDueCards)
+            {
+                <MudText Typo="Typo.h5" Align="Align.Center" Class="my-10">
+                    No cards due for review! Come back later.
+                </MudText>
+            }
+            else
+            {
+                <MudPaper Elevation="0" Class="pa-5 ma-5">
+                    <MudCardContent>
+                        <MudText Typo="Typo.h1" Align="Align.Center" Class="my-10">
+                            @_currentQA
+                        </MudText>
+                    </MudCardContent>
+                    <MudCardActions>
+                        <MudButton Variant="Variant.Filled"
+                                   Color="Color.Primary"
+                                   DropShadow="true"
+                                   Size="Size.Large"
+                                   FullWidth="true"
+                                   OnClick="@FlipCard">
+                            @_showAnswerOrQuestion
+                        </MudButton>
+                    </MudCardActions>
+                </MudPaper>
+            }
+        </MudPaper>
+        
+        <MudDivider
+            DividerType="DividerType.FullWidth"
+            Class="my-5"/>
+    </DialogContent>
+    
+    <DialogActions>
+        <MudStack Spacing="3"
+                  Row="true"
+                  AlignItems="AlignItems.Center"
+                  Justify="Justify.SpaceEvenly"
+                  Style="width: 100%; padding: 8px 16px;">
+
+            <MudButton Size="Size.Large"
+                       DropShadow="false"
+                       Variant="Variant.Outlined"
+                       Color="Color.Success"
+                       Disabled="@(!_isShowingAnswer)"
+                       Style="flex: 1"
+                       OnClick="() => RateCard(Rating.Easy)">
+                Easy
+            </MudButton>
+            <MudButton Size="Size.Large"
+                       DropShadow="false"
+                       Variant="Variant.Outlined"
+                       Color="Color.Info"
+                       Disabled="@(!_isShowingAnswer)"
+                       Style="flex: 1"
+                       OnClick="() => RateCard(Rating.Good)">
+                Medium
+            </MudButton>
+            <MudButton Size="Size.Large"
+                       DropShadow="false"
+                       Variant="Variant.Outlined"
+                       Color="Color.Tertiary"
+                       Disabled="@(!_isShowingAnswer)"
+                       Style="flex: 1"
+                       OnClick="() => RateCard(Rating.Hard)">
+                Hard
+            </MudButton>
+            <MudButton Size="Size.Large"
+                       DropShadow="false"
+                       Variant="Variant.Outlined"
+                       Color="Color.Error"
+                       Disabled="@(!_isShowingAnswer)"
+                       Style="flex: 1"
+                       OnClick="() => RateCard(Rating.Again)">
+                Again
+            </MudButton>
+        </MudStack>
+    </DialogActions>
+    
+</MudDialog>
+
+@code
+{
+    [CascadingParameter]
+    private IMudDialogInstance MudDialog { get; set; } = default!;
+    
+    [Parameter] public int DeckId { get; set; }
+    [Parameter]  public required string DeckName { get; set; }
+
+    private List<Card> _dueCards = new();
+    private Card? _currentCard;
+    private int _numberOfDueCards;
+    private int _progress = 0;
+    private int UserId;
+    
+    private bool _isLoading = true;
+    private bool _hasNoDueCards = false;
+
+
+    protected override async Task OnInitializedAsync()
+    {
+        var userIdString = await CurrentUserService.GetUserIdAsync();
+        
+        if (!int.TryParse(userIdString, out UserId))
+        {
+            throw new Exception("User is not authenticated or token is invalid.");
+        }
+        
+        try
+        {
+            var query = new GetAllDueCardsQuery(DeckId);
+            _dueCards = await GetAllDueCardsQueryHandler.Handle(query);
+            _numberOfDueCards = _dueCards.Count;
+            _currentCard = _dueCards.FirstOrDefault();
+            _hasNoDueCards = _dueCards.Count == 0;
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Failed to load cards: {ex.Message}", Severity.Error);
+        }
+        finally
+        {
+            _isLoading = false;
+        }
+    }
+
+    private bool _isShowingAnswer = false;
+
+    private string _currentQA => _currentCard == null ? "" :
+        _isShowingAnswer
+        ? _currentCard.BackOfCard ?? "(No answer)"
+        : _currentCard?.FrontOfCard;
+
+    private string _showAnswerOrQuestion => _isShowingAnswer
+        ? "Show Question"
+        : "Show Answer";
+
+    private void FlipCard()
+    {
+        if (_currentCard == null) return;
+        _isShowingAnswer = !_isShowingAnswer;
+        ;
+    }
+    
+    private async Task RateCard(Rating rating)
+    {
+        if (_currentCard == null) return;
+
+        try
+        {
+            var command = new StudyCardCommand(UserId, _currentCard.Id, rating);
+            await StudyCardCommandHandler.Handle(command);
+
+            _progress++;
+            _dueCards.RemoveAt(0);
+
+            if (_dueCards.Count == 0)
+            {
+                return;
+            }
+
+            _currentCard = _dueCards[0];
+            _isShowingAnswer = false;  // always start on question side
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Error saving review: {ex.Message}", Severity.Error);
+        }
+    }
+}

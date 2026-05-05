@@ -12,6 +12,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HazelNet-Tests", "HazelNet-
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HazelNet-Web", "HazelNet-Web\HazelNet-Web.csproj", "{7F508C61-BD58-D5D3-A895-3645675819D3}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HazelNet-Seeder", "HazelNet-Seeder\HazelNet-Seeder.csproj", "{F4F84FCD-5F9E-4830-AE38-3F52F9085016}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -38,6 +40,10 @@ Global
 		{7F508C61-BD58-D5D3-A895-3645675819D3}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{7F508C61-BD58-D5D3-A895-3645675819D3}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{7F508C61-BD58-D5D3-A895-3645675819D3}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F4F84FCD-5F9E-4830-AE38-3F52F9085016}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F4F84FCD-5F9E-4830-AE38-3F52F9085016}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F4F84FCD-5F9E-4830-AE38-3F52F9085016}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F4F84FCD-5F9E-4830-AE38-3F52F9085016}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

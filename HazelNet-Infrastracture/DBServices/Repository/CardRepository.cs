@@ -36,14 +36,20 @@ public class CardRepository : ICardRepository
     public async Task UpdateAsync(Card card)
     {
         await using var _context = await _contextFactory.CreateDbContextAsync();
-        _context.Cards.Update(card);
+        var existingCard = await _context.Cards.FirstOrDefaultAsync(c => c.Id == card.Id);
+        if (existingCard == null) return;
+        existingCard.FrontOfCard = card.FrontOfCard;
+        existingCard.BackOfCard = card.BackOfCard;
         await _context.SaveChangesAsync();
     }
 
     public async Task DeleteAsync(int cardId)
     {
         await using var _context = await _contextFactory.CreateDbContextAsync();
-        var card = await GetCardByIdAsync(cardId);
+        
+        var card = await _context.Cards
+            .Include(c => c.ReviewHistory)
+            .FirstOrDefaultAsync(c => c.Id == cardId);
         if (card != null)
         {
             _context.Cards.Remove(card);

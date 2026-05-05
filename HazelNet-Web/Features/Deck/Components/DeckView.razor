@@ -1,5 +1,7 @@
 ﻿@using HazelNet_Application.CQRS.Abstractions
+@using HazelNet_Application.CQRS.Features.Cards.Queries
 @using HazelNet_Application.CQRS.Features.Decks.Commands
+@using HazelNet_Domain.Models
 @using HazelNet_Web.ViewModel
 
 @inject ICommandHandler<DeleteDeckCommand> DeleteDeckCommandHandler
@@ -7,6 +9,7 @@
 @inject IDialogService DialogService
 @inject ICommandHandler<UpdateDeckCommand> UpdateDeckHandler
 @inject ICommandHandler<ClearCardsInDeckCommand> ClearCardsInDeckHandler
+@inject IQueryHandler<GetAllDueCardsQuery, List<Card>> GetAllDueCardsQueryHandler
 
 <MudCard Elevation="10" 
                          Style=" min-height: 150px; width: 100%; 
@@ -56,7 +59,7 @@
                         <MudGrid Justify="Justify.Center" Class="align-content-center" Spacing="2"> 
                             <MudItem sm="10" Class="my-auto mx-auto">
                                 <MudButton Variant="Variant.Filled" Color="Color.Primary" 
-                                           Size="Size.Medium" FullWidth="true">
+                                           Size="Size.Medium" FullWidth="true" OnClick="@StudyDeck">
                                     Study Now
                                 </MudButton>
                             </MudItem>
@@ -111,6 +114,13 @@
     [Parameter] public EventCallback OnDeckCleared { get; set; }
 
     private int _dueToday = 0;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var command = new GetAllDueCardsQuery(Deck.Id);
+        var dueCards = await GetAllDueCardsQueryHandler.Handle(command);
+        _dueToday = dueCards.Count;
+    }
 
     private string GetRelativeTime(DateTime date)
     {
@@ -245,6 +255,52 @@
         catch (Exception)
         {
             Snackbar.Add("An error occurred while managing the cards.", Severity.Error);
+        }
+    }
+
+    public async Task StudyDeck()
+    {
+        try
+        {
+            //parameter
+            var parameters = new DialogParameters
+            {
+                ["DeckId"] = Deck.Id,
+                ["DeckName"] = Deck.Name
+            };
+            
+            var options = new DialogOptions
+            {
+                MaxWidth = MaxWidth.Medium,
+                FullWidth = true,
+                CloseButton = true,
+                CloseOnEscapeKey = true,
+                Position = DialogPosition.Center,
+                BackdropClick = false
+            };
+            
+            var dialog = await DialogService.ShowAsync<StudyDeckkDialog>(
+                "Study Deck", parameters, options);
+
+            var result = await dialog.Result;
+
+            if (!result.Canceled)
+            {
+
+                StateHasChanged();
+            }
+        }
+        catch (UnauthorizedAccessException ex)
+        {
+            Snackbar.Add(ex.Message, Severity.Warning);
+        }
+        catch (KeyNotFoundException ex)
+        {
+            Snackbar.Add(ex.Message, Severity.Error);
+        }
+        catch (Exception)
+        {
+            Snackbar.Add("An error occurred while trying to study deck.", Severity.Error);
         }
     }
 

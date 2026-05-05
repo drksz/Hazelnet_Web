@@ -6,7 +6,7 @@ public class Card
     public int Id { get; set; }
     public required string FrontOfCard { get; set; }
     public string? BackOfCard { get; set; }
-    public DateTime CreationDate { get; set; } = DateTime.Now;
+    public DateTime CreationDate { get; set; } = DateTime.UtcNow;
     
     //Navigation properties
     public int DeckId { get; set; }

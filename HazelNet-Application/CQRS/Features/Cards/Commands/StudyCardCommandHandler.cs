@@ -36,22 +36,23 @@ public class StudyCardCommandHandler : ICommandHandler<StudyCardCommand>
         }
 
         var fsrsParameters = await _fsrsParametersRepository.GetFSRSParametersByUserIdAsync(command.userId);
-        if (fsrsParameters == null)
-        {
-            throw new Exception($"FSRS parameters for user with Id {command.userId} not found.");
-        }
-
-        var parameters = new Parameters(fsrsParameters);
+        
+        // Fall back to defaults if user has no custom parameters
+        var parameters = fsrsParameters != null 
+            ? new Parameters(fsrsParameters) 
+            : Parameters.DefaultParam();
+        
         var fsrs = new FSRS(parameters);
         var now = DateTime.UtcNow;
-
+        
         var result = fsrs.Next(card, now, command.Rating);
         card = result.Card;
         var reviewLog = result.ReviewLog;
         reviewLog.ReviewHistory = history;
 
+        // Both writes in one transaction
         await _reviewLogRepository.CreateAsync(reviewLog);
         await _cardRepository.UpdateAsync(card);
-
+        
     }
 }

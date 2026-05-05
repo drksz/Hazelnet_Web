@@ -8,20 +8,21 @@ namespace HazelNet_Infrastracture.DBServices.Repository;
 //implementation of ireviewlogrepository
 public class ReviewLogRepository : IReviewLogRepository
 {
-    private readonly ApplicationDbContext _context;
-
-    public ReviewLogRepository(ApplicationDbContext context)
+    private readonly IDbContextFactory<ApplicationDbContext> _contextFactory;
+    public ReviewLogRepository(IDbContextFactory<ApplicationDbContext> context)
     {
-        _context = context;
+        _contextFactory = context;
     }
 
     public async Task<ReviewLog?> GetReviewLogByIdAsync(int reviewLogId)
     {
+        await using var _context = await _contextFactory.CreateDbContextAsync();
         return await _context.ReviewLogs.FindAsync(reviewLogId);
     }
 
     public async Task<List<ReviewLog>> GetReviewLogsByReviewHistoryIdAsync(int reviewHistoryId)
     {
+        await using var _context = await _contextFactory.CreateDbContextAsync();
         return await _context.ReviewLogs
             .Where(rl => rl.ReviewHistoryId == reviewHistoryId)
             .ToListAsync();
@@ -29,12 +30,14 @@ public class ReviewLogRepository : IReviewLogRepository
 
     public async Task UpdateAsync(ReviewLog reviewLog)
     {
+        await using var _context = await _contextFactory.CreateDbContextAsync();
         _context.ReviewLogs.Update(reviewLog);
         await _context.SaveChangesAsync();
     }
 
     public async Task DeleteAsync(int reviewLogId)
     {
+        await using var _context = await _contextFactory.CreateDbContextAsync();
         var reviewLog = await GetReviewLogByIdAsync(reviewLogId);
         if (reviewLog != null)
         {
@@ -45,6 +48,7 @@ public class ReviewLogRepository : IReviewLogRepository
 
     public async Task CreateAsync(ReviewLog reviewLog)
     {
+        await using var _context = await _contextFactory.CreateDbContextAsync();
         await _context.ReviewLogs.AddAsync(reviewLog);
         await _context.SaveChangesAsync();
     }

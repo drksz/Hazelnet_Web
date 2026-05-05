@@ -7,20 +7,21 @@ namespace HazelNet_Infrastracture.Command;
 
 public class UserRepository :  IUserRepository
 {
-    public readonly ApplicationDbContext _context;
-
-    public UserRepository(ApplicationDbContext context)
+    private readonly IDbContextFactory<ApplicationDbContext> _contextFactory;
+    public UserRepository(IDbContextFactory<ApplicationDbContext> context)
     {
-        _context = context;
+        _contextFactory = context;
     }
 
     public async Task<bool> EmailExistAsync(string email)
     {
+        await using var _context = await _contextFactory.CreateDbContextAsync();
         return await _context.User.AnyAsync(c => c.EmailAddress == email);
     }
 
     public async Task RegisterUserAsync(User user)
     {
+        await using var _context = await _contextFactory.CreateDbContextAsync();
         _context.User.Add(user);
         await _context.SaveChangesAsync();
     }
@@ -28,6 +29,7 @@ public class UserRepository :  IUserRepository
     //Made it nullable for possiblity of null
     public async Task<string?> GetPasswordHashAsync(string email)
     {
+        await using var _context = await _contextFactory.CreateDbContextAsync();
         return await _context.User
             .Where(c => c.EmailAddress == email)
             .Select(c => c.PasswordHash)
@@ -37,6 +39,7 @@ public class UserRepository :  IUserRepository
     //Made a new query for getting user by email
     public async Task<User?> GetUserByEmailAsync(string email)
     {
+        await using var _context = await _contextFactory.CreateDbContextAsync();
         return await _context.User
             .Where(c => c.EmailAddress == email)
             .FirstOrDefaultAsync();

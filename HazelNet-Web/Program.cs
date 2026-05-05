@@ -27,7 +27,8 @@ using IUserRepository = HazelNet_Application.Interface.IUserRepository;
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Services.AddDbContext<ApplicationDbContext>( option =>
+builder.Services.AddDbContextFactory<ApplicationDbContext>
+( option =>
     option.UseNpgsql(builder.Configuration.GetConnectionString("Default")));
 
 // Add MudBlazor services
@@ -76,6 +77,9 @@ builder.Services.AddScoped<ICommandHandler<ClearCardsInDeckCommand>, ClearCardsI
 builder.Services.AddScoped<ICommandHandler<CreateCardCommand>, CreateCardCommandHandler>();
 builder.Services.AddScoped<ICommandHandler<UpdateCardCommand>, UpdateCardCommandHandler>();
 builder.Services.AddScoped<ICommandHandler<DeleteCardCommand>, DeleteCardCommandHandler>();
+builder.Services.AddScoped<IQueryHandler<GetAllDueCardsQuery, List<Card>>, GetAllDueCardsQueryHandler>();
+
+builder.Services.AddScoped<ICommandHandler<StudyCardCommand>, StudyCardCommandHandler>();
 
 
 builder.Services.AddHttpClient("LocalApi", (sp, client) =>

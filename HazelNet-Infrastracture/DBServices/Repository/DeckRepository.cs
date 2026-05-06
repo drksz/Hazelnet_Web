@@ -32,6 +32,7 @@ public class DeckRepository : IDeckRepository
         await using var _context = await _contextFactory.CreateDbContextAsync();
         return await _context.Decks
             .Where(d => d.UserId == userId)
+            .Include(d => d.Cards)
             .ToListAsync();
     }
 
@@ -60,6 +61,6 @@ public class DeckRepository : IDeckRepository
     public async Task ClearAllCardsInDeckAsync(int deckId)
     {
         await using var _context = await _contextFactory.CreateDbContextAsync();
-        var cards = await _context.Cards.Where(c => c.DeckId == deckId).ExecuteDeleteAsync();
+         var cards = await _context.Cards.Where(c => c.DeckId == deckId).ExecuteDeleteAsync();
     }
 }

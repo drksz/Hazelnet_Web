@@ -16,7 +16,6 @@ using HazelNet_Infrastracture.DBContext;
 using HazelNet_Infrastracture.DBServices.Repository;
 using HazelNet_Web.Features.Account;
 using HazelNet_Web.Services;
-using HazelNet_Web.ViewModel;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Components;
@@ -78,6 +77,10 @@ builder.Services.AddScoped<ICommandHandler<CreateCardCommand>, CreateCardCommand
 builder.Services.AddScoped<ICommandHandler<UpdateCardCommand>, UpdateCardCommandHandler>();
 builder.Services.AddScoped<ICommandHandler<DeleteCardCommand>, DeleteCardCommandHandler>();
 builder.Services.AddScoped<IQueryHandler<GetAllDueCardsQuery, List<Card>>, GetAllDueCardsQueryHandler>();
+builder.Services.AddScoped<IQueryHandler<GetCountOfAllCardsQuery, int>, GetCountOfAllCardsQueryHandler>();
+builder.Services.AddScoped<IQueryHandler<GetCompletedDecksCountQuery, int>, GetCompletedDecksCountQueryHandler >();
+
+
 
 builder.Services.AddScoped<ICommandHandler<StudyCardCommand>, StudyCardCommandHandler>();
 

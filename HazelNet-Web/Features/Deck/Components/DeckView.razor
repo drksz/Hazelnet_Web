@@ -2,17 +2,15 @@
 @using HazelNet_Application.CQRS.Features.Cards.Queries
 @using HazelNet_Application.CQRS.Features.Decks.Commands
 @using HazelNet_Domain.Models
-@using HazelNet_Web.ViewModel
 
 @inject ICommandHandler<DeleteDeckCommand> DeleteDeckCommandHandler
 @inject ISnackbar Snackbar
 @inject IDialogService DialogService
 @inject ICommandHandler<UpdateDeckCommand> UpdateDeckHandler
 @inject ICommandHandler<ClearCardsInDeckCommand> ClearCardsInDeckHandler
-@inject IQueryHandler<GetAllDueCardsQuery, List<Card>> GetAllDueCardsQueryHandler
 
 <MudCard Elevation="10" 
-                         Style=" min-height: 150px; width: 100%; 
+         Style=" min-height: 150px; width: 100%; 
                          display: flex; flex-direction: column; border: 120px">
                     <MudCardHeader>
                         <CardHeaderContent>
@@ -52,14 +50,15 @@
                                 </MudText>
                             </MudItem>
                             <MudChip T="int" Color="Color.Error" Size="Size.Small">
-                                @_dueToday due
+                                @Deck.DueToday due
                             </MudChip>
                         </MudStack>
                         
                         <MudGrid Justify="Justify.Center" Class="align-content-center" Spacing="2"> 
                             <MudItem sm="10" Class="my-auto mx-auto">
                                 <MudButton Variant="Variant.Filled" Color="Color.Primary" 
-                                           Size="Size.Medium" FullWidth="true" OnClick="@StudyDeck">
+                                           Size="Size.Medium" FullWidth="true" OnClick="@StudyDeck"
+                                           >
                                     Study Now
                                 </MudButton>
                             </MudItem>
@@ -111,16 +110,10 @@
     [Parameter] public DeckViewModel Deck { get; set; }
     [Parameter] public EventCallback<int> OnDeckDeleted { get; set; }
     [Parameter] public EventCallback<UpdateDeckCommand> OnDeckUpdated { get; set; }
-    [Parameter] public EventCallback OnDeckCleared { get; set; }
+    [Parameter] public EventCallback OnCardsUpdated { get; set; }
 
-    private int _dueToday = 0;
-
-    protected override async Task OnInitializedAsync()
-    {
-        var command = new GetAllDueCardsQuery(Deck.Id);
-        var dueCards = await GetAllDueCardsQueryHandler.Handle(command);
-        _dueToday = dueCards.Count;
-    }
+    
+    
 
     private string GetRelativeTime(DateTime date)
     {
@@ -197,6 +190,7 @@
         
             
             await OnDeckDeleted.InvokeAsync(Deck.Id);
+            await OnCardsUpdated.InvokeAsync();
             
         }
         catch (UnauthorizedAccessException ex)
@@ -238,9 +232,9 @@
 
             var result = await dialog.Result;
 
-            if (!result.Canceled)
+            if (!result.Canceled || result.Canceled)
             {
-
+                await OnCardsUpdated.InvokeAsync();
                 StateHasChanged();
             }
         }
@@ -283,12 +277,10 @@
                 "Study Deck", parameters, options);
 
             var result = await dialog.Result;
-
-            if (!result.Canceled)
-            {
-
-                StateHasChanged();
-            }
+            
+            await OnCardsUpdated.InvokeAsync(); 
+            StateHasChanged();
+   
         }
         catch (UnauthorizedAccessException ex)
         {
@@ -312,7 +304,8 @@
             var command = new ClearCardsInDeckCommand(id);
             await ClearCardsInDeckHandler.Handle(command);
             Snackbar.Add($"{Deck.Name} successfully cleared.", Severity.Info);
-            await OnDeckCleared.InvokeAsync();
+            await OnCardsUpdated.InvokeAsync();
+            StateHasChanged();
         }
         catch (UnauthorizedAccessException ex)
         {
@@ -327,4 +320,6 @@
             Snackbar.Add("An error occurred while clearing the deck.", Severity.Error);
         }
     }
+    
+
 }

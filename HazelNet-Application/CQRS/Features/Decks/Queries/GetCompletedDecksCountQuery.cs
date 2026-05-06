@@ -2,5 +2,4 @@
 
 namespace HazelNet_Application.CQRS.Features.Decks.Queries;
 
-
-public record GetDecksVMQuery(int UserId) : IQuery<List<DeckViewModel>>;
+public record GetCompletedDecksCountQuery(int UserId) : IQuery<int>;

@@ -40,6 +40,15 @@ public class CardRepository : ICardRepository
         if (existingCard == null) return;
         existingCard.FrontOfCard = card.FrontOfCard;
         existingCard.BackOfCard = card.BackOfCard;
+        existingCard.Due = card.Due;
+        existingCard.Stability = card.Stability;
+        existingCard.Difficulty = card.Difficulty;
+        existingCard.State = card.State;
+        existingCard.Reps = card.Reps;
+        existingCard.Lapses = card.Lapses;
+        existingCard.ElapsedDays = card.ElapsedDays;
+        existingCard.ScheduledDays = card.ScheduledDays;
+        existingCard.LastReview = card.LastReview;
         await _context.SaveChangesAsync();
     }
 

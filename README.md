@@ -76,3 +76,14 @@ There are four seperate but connected projects in this repo/solution(.sln). This
 ![Picture of Login Page](/Readme_Images/Login.png)
 
 ![Picture of Registration Page](/Readme_Images/Register.png)
+
+![Picture of Dashboard Page](/Readme_Images/Dashboard.png).
+
+![Picture of Deck Page](/Readme_Images/DeckTab.png).
+
+![Picture of Deck Management](/Readme_Images/ManageCard.png).
+
+![Picture of Deck Management](/Readme_Images/s1.png).
+
+![Picture of Deck Management](/Readme_Images/s2.png).
+

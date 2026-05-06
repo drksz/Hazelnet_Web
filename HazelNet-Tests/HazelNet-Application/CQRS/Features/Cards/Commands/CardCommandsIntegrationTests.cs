@@ -32,24 +32,39 @@ public class CardCommandsIntegrationTests : IDisposable
     
     // Replace the field and constructor
     private readonly SqliteConnection _connection;
-    private readonly IDbContextFactory<ApplicationDbContext> _dbContextFactory;
+    private readonly ApplicationDbContext _dbContext;
+    private readonly IDbContextFactory<ApplicationDbContext> _contextFactory;
 
     public CardCommandsIntegrationTests()
     {
         _connection = new SqliteConnection("DataSource=:memory:");
         _connection.Open();
 
-        var options = new DbContextOptionsBuilder<ApplicationDbContext>() // ✅ not IDbContextFactory
+        var options = new DbContextOptionsBuilder<ApplicationDbContext>() 
             .UseSqlite(_connection)
             .Options;
 
-        _dbContextFactory = new TestDbContextFactory(options);
+        _dbContext = new SqliteTestDbContext(options);
+        _dbContext.Database.EnsureCreated();
 
-        // Ensure schema is created once
-        using var ctx = _dbContextFactory.CreateDbContext();
-        ctx.Database.EnsureCreated();
+        _contextFactory = new TestDbContextFactory(options);
     }
-    
+
+    private class TestDbContextFactory : IDbContextFactory<ApplicationDbContext>
+    {
+        private readonly DbContextOptions<ApplicationDbContext> _options;
+
+        public TestDbContextFactory(DbContextOptions<ApplicationDbContext> options)
+        {
+            _options = options;
+        }
+
+        public ApplicationDbContext CreateDbContext()
+        {
+            return new SqliteTestDbContext(_options);
+        }
+    }
+
 
     [Fact]
     public async Task CreateCardCommandHandler_ShouldAddCardToDatabase()
@@ -57,20 +72,18 @@ public class CardCommandsIntegrationTests : IDisposable
         // arrange
             // create concrete implementations of the repositories
             
-        await using var ctx = _dbContextFactory.CreateDbContext();
-        
-        var cardRepository = new CardRepository(_dbContextFactory);
-        var reviewHistoryRepository = new ReviewHistoryRepository(_dbContextFactory);
+        var cardRepository = new CardRepository(_contextFactory);
+        var reviewHistoryRepository = new ReviewHistoryRepository(_contextFactory);
         
         var handler = new CreateCardCommandHandler(cardRepository, reviewHistoryRepository);
         
         var user = new User { Username = "TestUser", EmailAddress = "test@example.com", PasswordHash = "hash" };
-        ctx.User.Add(user);
-        await ctx.SaveChangesAsync();
+        _dbContext.User.Add(user);
+        await _dbContext.SaveChangesAsync();
 
         var deck = new Deck { DeckName = "Test Deck", CreationDate = DateTime.UtcNow, UserId = user.Id };
-        ctx.Decks.Add(deck);
-        await ctx.SaveChangesAsync();
+        _dbContext.Decks.Add(deck);
+        await _dbContext.SaveChangesAsync();
 
             // creating a command to test
         var command = new CreateCardCommand(
@@ -85,7 +98,7 @@ public class CardCommandsIntegrationTests : IDisposable
 
         // assert
             // We query the DB directly to ensure the command successfully mutated the state!
-        var savedCard = await ctx.Cards.FirstOrDefaultAsync(c => c.FrontOfCard == "What is CQRS?");
+        var savedCard = await _dbContext.Cards.FirstOrDefaultAsync(c => c.FrontOfCard == "What is CQRS?");
         
         savedCard.Should().NotBeNull();
         savedCard!.BackOfCard.Should().Be("Command Query Responsibility Segregation");
@@ -95,16 +108,14 @@ public class CardCommandsIntegrationTests : IDisposable
     [Fact]
     public async Task DeleteCardCommandHandler_ShouldRemoveCardFromDatabase()
     {
-        await using var ctx = _dbContextFactory.CreateDbContext();
-
         // arrange
         var user = new User { Username = "TestUser", EmailAddress = "test@example.com", PasswordHash = "hash" };
-        ctx.User.Add(user);
-        await ctx.SaveChangesAsync();
+        _dbContext.User.Add(user);
+        await _dbContext.SaveChangesAsync();
 
         var deck = new Deck { DeckName = "Test Deck", CreationDate = DateTime.UtcNow, UserId = user.Id };
-        ctx.Decks.Add(deck);
-        await ctx.SaveChangesAsync();
+        _dbContext.Decks.Add(deck);
+        await _dbContext.SaveChangesAsync();
 
         var card = new Card
         {
@@ -116,12 +127,11 @@ public class CardCommandsIntegrationTests : IDisposable
             Due = DateTime.UtcNow, 
             ReviewHistory = new ReviewHistory()
         };
-        
-        ctx.Cards.Add(card);
-        await ctx.SaveChangesAsync();
+        _dbContext.Cards.Add(card);
+        await _dbContext.SaveChangesAsync();
 
-        var cardRepository = new CardRepository(_dbContextFactory);
-        var deckRepository = new DeckRepository(_dbContextFactory);
+        var cardRepository = new CardRepository(_contextFactory);
+        var deckRepository = new DeckRepository(_contextFactory);
         var currentUserService = new MockCurrentUserService(user.Id.ToString());
         
         var handler = new DeleteCardCommandHandler(cardRepository, deckRepository, currentUserService);
@@ -131,7 +141,8 @@ public class CardCommandsIntegrationTests : IDisposable
         await handler.Handle(command);
 
         // assert
-        var deletedCard = await ctx.Cards.FindAsync(card.Id);
+        _dbContext.ChangeTracker.Clear();
+        var deletedCard = await _dbContext.Cards.FindAsync(card.Id);
         deletedCard.Should().BeNull();
     }
 
@@ -161,13 +172,5 @@ public class CardCommandsIntegrationTests : IDisposable
             modelBuilder.Entity<User>().Ignore(u => u.FSRSParameters);
             modelBuilder.Entity<Card>().Ignore(c => c.ReviewHistoryId);
         }
-    }
-    
-    
-    private sealed class TestDbContextFactory : IDbContextFactory<ApplicationDbContext>
-    {
-        private readonly DbContextOptions<ApplicationDbContext> _options;
-        public TestDbContextFactory(DbContextOptions<ApplicationDbContext> options) => _options = options;
-        public ApplicationDbContext CreateDbContext() => new SqliteTestDbContext(_options);
     }
 }

@@ -61,23 +61,33 @@
             }
             else
             {
-                <MudPaper Elevation="0" Class="pa-5 ma-5">
-                    <MudCardContent>
-                        <MudText Typo="Typo.h1" Align="Align.Center" Class="my-10">
-                            @_currentQA
-                        </MudText>
-                    </MudCardContent>
-                    <MudCardActions>
-                        <MudButton Variant="Variant.Filled"
-                                   Color="Color.Primary"
-                                   DropShadow="true"
-                                   Size="Size.Large"
-                                   FullWidth="true"
-                                   OnClick="@FlipCard">
-                            @_showAnswerOrQuestion
-                        </MudButton>
-                    </MudCardActions>
-                </MudPaper>
+                if (_progress < _numberOfDueCards)
+                {
+                    <MudPaper Elevation="0" Class="pa-5 ma-5">
+                        <MudCardContent>
+                            <MudText Typo="Typo.h1" Align="Align.Center" Class="my-10">
+                                @_currentQA
+                            </MudText>
+                        </MudCardContent>
+                        <MudCardActions>
+                            <MudButton Variant="Variant.Filled"
+                                       Color="Color.Primary"
+                                       DropShadow="true"
+                                       Size="Size.Large"
+                                       FullWidth="true"
+                                       OnClick="@FlipCard">
+                                @_showAnswerOrQuestion
+                            </MudButton>
+                        </MudCardActions>
+                    </MudPaper>
+                }
+                else
+                {
+                    <MudText Typo="Typo.h5" Align="Align.Center" Class="my-10">
+                        Finished all cards due for review! Come back later.
+                    </MudText>
+                }
+                
             }
         </MudPaper>
         
@@ -87,49 +97,63 @@
     </DialogContent>
     
     <DialogActions>
-        <MudStack Spacing="3"
-                  Row="true"
-                  AlignItems="AlignItems.Center"
-                  Justify="Justify.SpaceEvenly"
-                  Style="width: 100%; padding: 8px 16px;">
+        @if (_progress < _numberOfDueCards)
+        {
+            <MudStack Spacing="3"
+                      Row="true"
+                      AlignItems="AlignItems.Center"
+                      Justify="Justify.SpaceEvenly"
+                      Style="width: 100%; padding: 8px 16px;">
 
-            <MudButton Size="Size.Large"
-                       DropShadow="false"
-                       Variant="Variant.Outlined"
-                       Color="Color.Success"
-                       Disabled="@(!_isShowingAnswer)"
-                       Style="flex: 1"
-                       OnClick="() => RateCard(Rating.Easy)">
-                Easy
+                <MudButton Size="Size.Large"
+                           DropShadow="false"
+                           Variant="Variant.Outlined"
+                           Color="Color.Success"
+                           Disabled="@(!_isShowingAnswer)"
+                           Style="flex: 1"
+                           OnClick="() => RateCard(Rating.Easy)">
+                    Easy
+                </MudButton>
+                <MudButton Size="Size.Large"
+                           DropShadow="false"
+                           Variant="Variant.Outlined"
+                           Color="Color.Info"
+                           Disabled="@(!_isShowingAnswer)"
+                           Style="flex: 1"
+                           OnClick="() => RateCard(Rating.Good)">
+                    Medium
+                </MudButton>
+                <MudButton Size="Size.Large"
+                           DropShadow="false"
+                           Variant="Variant.Outlined"
+                           Color="Color.Tertiary"
+                           Disabled="@(!_isShowingAnswer)"
+                           Style="flex: 1"
+                           OnClick="() => RateCard(Rating.Hard)">
+                    Hard
+                </MudButton>
+                <MudButton Size="Size.Large"
+                           DropShadow="false"
+                           Variant="Variant.Outlined"
+                           Color="Color.Error"
+                           Disabled="@(!_isShowingAnswer)"
+                           Style="flex: 1"
+                           OnClick="() => RateCard(Rating.Again)">
+                    Again
+                </MudButton>
+            </MudStack>
+        }
+        else
+        {
+            <MudButton Variant="Variant.Filled"
+                       Color="Color.Primary"
+                       FullWidth="true"
+                       Size="Size.Medium"
+                       OnClick="FinishSession">
+                Go Back
             </MudButton>
-            <MudButton Size="Size.Large"
-                       DropShadow="false"
-                       Variant="Variant.Outlined"
-                       Color="Color.Info"
-                       Disabled="@(!_isShowingAnswer)"
-                       Style="flex: 1"
-                       OnClick="() => RateCard(Rating.Good)">
-                Medium
-            </MudButton>
-            <MudButton Size="Size.Large"
-                       DropShadow="false"
-                       Variant="Variant.Outlined"
-                       Color="Color.Tertiary"
-                       Disabled="@(!_isShowingAnswer)"
-                       Style="flex: 1"
-                       OnClick="() => RateCard(Rating.Hard)">
-                Hard
-            </MudButton>
-            <MudButton Size="Size.Large"
-                       DropShadow="false"
-                       Variant="Variant.Outlined"
-                       Color="Color.Error"
-                       Disabled="@(!_isShowingAnswer)"
-                       Style="flex: 1"
-                       OnClick="() => RateCard(Rating.Again)">
-                Again
-            </MudButton>
-        </MudStack>
+        }
+        
     </DialogActions>
     
 </MudDialog>
@@ -141,7 +165,7 @@
     
     [Parameter] public int DeckId { get; set; }
     [Parameter]  public required string DeckName { get; set; }
-
+    
     private List<Card> _dueCards = new();
     private Card? _currentCard;
     private int _numberOfDueCards;
@@ -221,5 +245,11 @@
         {
             Snackbar.Add($"Error saving review: {ex.Message}", Severity.Error);
         }
+    }
+
+    private async Task FinishSession()
+    {
+        MudDialog.Close(DialogResult.Ok(true));
+        Snackbar.Add($"Studying {DeckName} deck complete!", Severity.Success);
     }
 }

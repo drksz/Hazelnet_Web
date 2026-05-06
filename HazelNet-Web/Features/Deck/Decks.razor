@@ -6,14 +6,16 @@
 @using HazelNet_Application.CQRS.Abstractions
 @using HazelNet_Application.CQRS.Features.Decks.Queries
 @using HazelNet_Application.CQRS.Abstractions
+@using HazelNet_Application.CQRS.Features.Cards.Queries
 @using HazelNet_Application.CQRS.Features.Decks.Commands
 @using HazelNet_Web.Features.Deck.Components
-@using HazelNet_Web.ViewModel
 @using Microsoft.AspNetCore.Components.Authorization
 
 @inject AuthenticationStateProvider AuthenticationStateProvider
 @inject IQueryHandler<GetDecksVMQuery, List<DeckViewModel>> GetDecksVMHandler
 @inject ICommandHandler<CreateDeckCommand> CreateDeckHandler
+@inject IQueryHandler<GetCountOfAllCardsQuery, int> GetCountOfAllCardsQueryHandler
+@inject IQueryHandler<GetCompletedDecksCountQuery, int> GetCompletedDecksCountHandler
 @inject IDialogService DialogService
 @inject ISnackbar Snackbar
 
@@ -126,13 +128,13 @@
             </MudStack>
             
         }
-        @foreach (var deck in _DeckList)
+        @foreach (var deck in FilteredDecks)
         {
             <MudItem @key="deck.Id" sm="12" md="4" lg="3" Class="d-flex">
                 <DeckView Deck="deck" 
                           OnDeckDeleted="RemoveDeckFromList"
                           OnDeckUpdated="UpdateDeckInList"
-                          OnDeckCleared="ClearedDeckUpdate"/>
+                          OnCardsUpdated="RefreshAfterSession"/>
             </MudItem>
         }
 
@@ -150,9 +152,9 @@
     private Task<AuthenticationState>? AuthStateTask { get; set; }
 
     private string? _Username;
-    private string? _UserId;
+    private string? StringUserId;
+    private int _UserId;
     private string? _UserEmail;
-
     private string? _HighlightedText;
 
     private string _SortDisplay = "Date Added";
@@ -162,6 +164,8 @@
     private int _ToTaldueToday;
     private int _CompletedDecks;
 
+    private bool _isGridView = true;
+
     
 
     protected override async Task OnInitializedAsync()
@@ -170,27 +174,22 @@
         {
             var authState = await AuthStateTask;
             var user = authState.User;
+          
 
             if (user.Identity is not null && user.Identity.IsAuthenticated)
             {
                 _Username = user.Identity.Name;
                 _UserEmail = user.FindFirst(System.Security.Claims.ClaimTypes.Email)?.Value;
-                _UserId = user.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+                 StringUserId = user.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
             }
-            if (!int.TryParse(_UserId, out int parsedUserId)) return;
-            
-            _DeckList = await GetDecksVMHandler.Handle(new GetDecksVMQuery(parsedUserId));
-            _NumOfDecks = _DeckList.Count;
-            SortDecks();
-            
+            if (!int.TryParse(StringUserId, out _UserId)) return;
+            await RefreshPageData();
         }
     }
     
     private async Task CreateNewDeck()
     {
-        if (!int.TryParse(_UserId, out int parsedUserId)) return;
-        
-        var parameters = new DialogParameters { ["UserId"] = parsedUserId };
+        var parameters = new DialogParameters { ["UserId"] = _UserId };
         
         var options = new DialogOptions
         {
@@ -209,13 +208,10 @@
 
             await CreateDeckHandler.Handle(command);
             
-           
-            
-            _DeckList = await GetDecksVMHandler.Handle(new GetDecksVMQuery(parsedUserId));
-            _NumOfDecks = _DeckList.Count;
-            
+            _DeckList = await GetDecksVMHandler.Handle(new GetDecksVMQuery(_UserId));
+            await RefreshPageData();
             Snackbar.Add("Deck successfully created", Severity.Success);
-            StateHasChanged();
+            await RefreshPageData();
             
         }
     }
@@ -225,7 +221,11 @@
         _DeckList = _SortDisplay switch
         {
             //Implement Due First. Must return deck with cards that are due the soonest
-            "due_first"          => _DeckList.OrderBy(x => x.Name).ToList(),
+            "due_first"          => _DeckList
+                    .OrderBy(x => x.EarliestDueDate == null)       
+                    .ThenBy(x => x.EarliestDueDate)                 
+                    .ThenByDescending(x => x.DueToday)            
+                    .ToList(),
             "by_name"            => _DeckList.OrderBy(x => x.Name).ToList(),
             "date_added"         => _DeckList.OrderBy(x => x.CreationDate).ToList(),
             "recently_accessed"  => _DeckList.OrderByDescending(x => x.LastDateAccessed).ToList(),
@@ -233,15 +233,13 @@
         };
     }
     
-    private void RemoveDeckFromList(int deletedDeckId)
+    private async Task RemoveDeckFromList(int deletedDeckId)
     {
         _DeckList = _DeckList
             .Where(d => d.Id != deletedDeckId)
             .ToList();
 
-        _NumOfDecks = _DeckList.Count;
-
-        StateHasChanged();
+        await RefreshPageData();
     }
 
     private void UpdateDeckInList(UpdateDeckCommand updated)
@@ -256,11 +254,24 @@
 
         StateHasChanged();
     }
-
-    private void ClearedDeckUpdate()
+    
+   
+    private async Task RefreshPageData()
     {
+        _DeckList = await GetDecksVMHandler.Handle(new GetDecksVMQuery(_UserId));
+        _NumOfDecks = _DeckList.Count;
+        _TotalCards = await GetCountOfAllCardsQueryHandler.Handle(new GetCountOfAllCardsQuery(_UserId));
+        _CompletedDecks = await GetCompletedDecksCountHandler.Handle(new GetCompletedDecksCountQuery(_UserId));
+        _ToTaldueToday = _DeckList.Sum(d => d.DueToday); 
+        SortDecks();
         StateHasChanged();
     }
     
+    private async Task RefreshAfterSession() => await RefreshPageData();
+    
+    private IEnumerable<DeckViewModel> FilteredDecks => string.IsNullOrWhiteSpace(_HighlightedText)
+        ? _DeckList
+        : _DeckList.Where(d => d.Name.Contains(_HighlightedText, StringComparison.OrdinalIgnoreCase)
+                               || (d.Description?.Contains(_HighlightedText, StringComparison.OrdinalIgnoreCase) ?? false));
     
 }

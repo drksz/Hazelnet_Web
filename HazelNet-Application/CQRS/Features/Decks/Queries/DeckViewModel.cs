@@ -1,25 +1,17 @@
-﻿using HazelNet_Domain.Models;
-
-namespace HazelNet_Web.ViewModel;
-
-public class DeckViewModel
+﻿public class DeckViewModel
 {
     public int Id { get; set; }
-    public string Name;
-    public string? Description;
-    public int TotalNumberOfCards = 0;
-    public DateTime LastDateAccessed;
-    public DateTime CreationDate;
-        
-    //I need a function for the following 
+    public string Name { get; set; }
+    public string? Description { get; set; }
+    public int TotalNumberOfCards { get; set; }
+    public DateTime LastDateAccessed { get; set; }
+    public DateTime CreationDate { get; set; }
     public int MasteredCards { get; set; }
-    
+    public int DueToday { get; set; }
+    public DateTime? EarliestDueDate { get; set; }
+
     public double MasteredPercentage =>
         TotalNumberOfCards == 0 ? 0 :
-            (double)MasteredCards / TotalNumberOfCards * 100;
-
-    public int NumOfDueCards { get; set; } = 0;
-
+            Math.Round((double)MasteredCards / TotalNumberOfCards * 100, 1);
     
-  
 }

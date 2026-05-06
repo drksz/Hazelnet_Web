@@ -1,7 +1,6 @@
 ﻿using HazelNet_Application.CQRS.Abstractions;
 using HazelNet_Domain.IRepository;
 using HazelNet_Domain.Models;
-using HazelNet_Web.ViewModel;
 
 namespace HazelNet_Application.CQRS.Features.Decks.Queries;
 
@@ -18,7 +17,7 @@ public class GetDecksVMQueryHandler
     {
 
         var decks = await _deckRepository.GetAllDeckByUserIdAsync(query.UserId);
-
+        DateTime now = DateTime.UtcNow;
 
         var result = decks.Select(d => new DeckViewModel
         {
@@ -26,8 +25,13 @@ public class GetDecksVMQueryHandler
             Name = d.DeckName,
             Description = d.DeckDescription,
             TotalNumberOfCards = d.Cards.Count,
+            LastDateAccessed = d.LastAcess,
             CreationDate = d.CreationDate,
-            LastDateAccessed = d.LastAcess
+            DueToday = d.Cards.Count(c => c.State == State.New || c.Due <= now),
+            MasteredCards = d.Cards.Count(c => c.State == State.Review && c.Due > now),
+            EarliestDueDate = d.Cards
+            .Where(c => c.State != State.New)
+            .MinBy(c => c.Due)?.Due
         }).ToList();
 
         return result;

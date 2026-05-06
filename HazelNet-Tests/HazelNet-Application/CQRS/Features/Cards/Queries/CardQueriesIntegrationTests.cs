@@ -13,6 +13,7 @@ public class CardQueriesIntegrationTests : IDisposable
 {
     private readonly SqliteConnection _connection;
     private readonly ApplicationDbContext _dbContext;
+    private readonly IDbContextFactory<ApplicationDbContext> _contextFactory;
 
     public CardQueriesIntegrationTests()
     {
@@ -25,13 +26,30 @@ public class CardQueriesIntegrationTests : IDisposable
 
         _dbContext = new SqliteTestDbContext(options);
         _dbContext.Database.EnsureCreated();
+
+        _contextFactory = new TestDbContextFactory(options);
+    }
+
+    private class TestDbContextFactory : IDbContextFactory<ApplicationDbContext>
+    {
+        private readonly DbContextOptions<ApplicationDbContext> _options;
+
+        public TestDbContextFactory(DbContextOptions<ApplicationDbContext> options)
+        {
+            _options = options;
+        }
+
+        public ApplicationDbContext CreateDbContext()
+        {
+            return new SqliteTestDbContext(_options);
+        }
     }
 
     [Fact]
     public async Task GetCardsByDeckIdQueryHandler_ShouldReturnCardsForSpecificDeck()
     {
         // arrange
-        var cardRepository = new CardRepository(_dbContext);
+        var cardRepository = new CardRepository(_contextFactory);
         var handler = new GetCardsByDeckIdQueryHandler(cardRepository);
 
         var user = new User { Username = "TestUser", EmailAddress = "test@example.com", PasswordHash = "hash" };
@@ -99,7 +117,7 @@ public class CardQueriesIntegrationTests : IDisposable
     public async Task GetCardByIdQueryHandler_ShouldReturnCorrectCard()
     {
         // arrange
-        var cardRepository = new CardRepository(_dbContext);
+        var cardRepository = new CardRepository(_contextFactory);
         var handler = new GetCardByIdQueryHandler(cardRepository);
 
         var user = new User { Username = "TestUser", EmailAddress = "test@example.com", PasswordHash = "hash" };

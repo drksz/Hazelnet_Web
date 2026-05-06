@@ -53,6 +53,15 @@ namespace HazelNet.Tests.Optimizer
             _connection.Dispose();
         }
 
+        private class TestDbContextFactory : IDbContextFactory<ApplicationDbContext>
+        {
+            private readonly DbContextOptions<ApplicationDbContext> _options;
+
+            public TestDbContextFactory(DbContextOptions<ApplicationDbContext> options) => _options = options;
+
+            public ApplicationDbContext CreateDbContext() => new SqliteTestDbContext(_options);
+        }
+
         [Fact]
         public async Task EndToEnd_OptimizeWeightsAsync_ReadsFromRealDb_AndTrains()
         {
@@ -70,8 +79,8 @@ namespace HazelNet.Tests.Optimizer
             // The delegate here is exactly what production code is expected to pass:
             // a single batched WHERE...IN query followed by a GroupBy.
             using var ctx = new SqliteTestDbContext(_options);
-            var historyRepo = new ReviewHistoryRepository(ctx);
-
+            var historyRepo = new ReviewHistoryRepository(new TestDbContextFactory(_options));
+            
             Func<IEnumerable<int>, Task<IReadOnlyDictionary<int, List<ReviewLog>>>> logFetcher = async historyIds =>
             {
                 var idList = historyIds.ToList();
@@ -118,7 +127,7 @@ namespace HazelNet.Tests.Optimizer
             }
 
             using var ctx = new SqliteTestDbContext(_options);
-            var historyRepo = new ReviewHistoryRepository(ctx);
+            var historyRepo = new ReviewHistoryRepository(new TestDbContextFactory(_options));
 
             int fetcherCallCount = 0;
             Func<IEnumerable<int>, Task<IReadOnlyDictionary<int, List<ReviewLog>>>> logFetcher = async historyIds =>
@@ -157,7 +166,7 @@ namespace HazelNet.Tests.Optimizer
             }
 
             using var ctx = new SqliteTestDbContext(_options);
-            var historyRepo = new ReviewHistoryRepository(ctx);
+            var historyRepo = new ReviewHistoryRepository(new TestDbContextFactory(_options));
 
             // Per-id delegate, naive style - one query per id.
             Func<int, Task<List<ReviewLog>>> perIdFetcher = async historyId =>
@@ -185,7 +194,7 @@ namespace HazelNet.Tests.Optimizer
             }
 
             using var ctx = new SqliteTestDbContext(_options);
-            var historyRepo = new ReviewHistoryRepository(ctx);
+            var historyRepo = new ReviewHistoryRepository(new TestDbContextFactory(_options));
 
             Func<IEnumerable<int>, Task<IReadOnlyDictionary<int, List<ReviewLog>>>> logFetcher = async historyIds =>
             {

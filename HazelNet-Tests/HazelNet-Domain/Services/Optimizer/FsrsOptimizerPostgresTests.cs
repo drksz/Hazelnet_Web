@@ -34,6 +34,13 @@ namespace HazelNet.Tests.Optimizer
             return new ApplicationDbContext(options);
         }
 
+
+        private class TestDbContextFactory : IDbContextFactory<ApplicationDbContext>
+        {
+            public ApplicationDbContext CreateDbContext() => BuildContext();
+        }
+
+
         // ------------------------------------------------------------------ helpers
 
         /// <summary>
@@ -72,7 +79,7 @@ namespace HazelNet.Tests.Optimizer
             var cardIds = await GetSeedUserCardIdsAsync(ctx);
             cardIds.Should().HaveCount(15, "seeder creates 3 decks × 5 cards each");
 
-            var historyRepo = new ReviewHistoryRepository(ctx);
+            var historyRepo = new ReviewHistoryRepository(new TestDbContextFactory());
 
             Func<IEnumerable<int>, Task<IReadOnlyDictionary<int, List<ReviewLog>>>> logFetcher =
                 async historyIds =>
@@ -125,7 +132,7 @@ namespace HazelNet.Tests.Optimizer
 
             var cardIds = await GetSeedUserCardIdsAsync(ctx);
 
-            var historyRepo = new ReviewHistoryRepository(ctx);
+            var historyRepo = new ReviewHistoryRepository(new TestDbContextFactory());
 
             int fetcherCallCount = 0;
             Func<IEnumerable<int>, Task<IReadOnlyDictionary<int, List<ReviewLog>>>> logFetcher =
@@ -167,7 +174,7 @@ namespace HazelNet.Tests.Optimizer
 
             var realCardIds = await GetSeedUserCardIdsAsync(ctx);
 
-            var historyRepo = new ReviewHistoryRepository(ctx);
+            var historyRepo = new ReviewHistoryRepository(new TestDbContextFactory());
 
             Func<IEnumerable<int>, Task<IReadOnlyDictionary<int, List<ReviewLog>>>> logFetcher =
                 async historyIds =>

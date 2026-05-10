@@ -88,6 +88,43 @@ namespace HazelNet.Services.Optimizer;
 //
 // learningRate and regularization have sensible defaults (0.05 each); only adjust
 // them if you have a concrete reason to.
+//
+// BLAZOR PROGRESS REPORTING
+// --------------------------
+// Both async methods take an optional IProgress<OptimizerProgress> so a Blazor
+// component can show live status without any polling or timers.
+//
+// OptimizerProgress has four properties:
+//   .Stage    - which step is currently running, e.g. "Loading histories"
+//   .Current  - how many steps are done within that stage
+//   .Total    - total steps in that stage
+//   .Percent  - convenience 0-100 double, plug it straight into a progress bar width
+//
+// The callback runs on the Blazor sync context automatically because Progress<T>
+// captures it at construction time. That means StateHasChanged() inside the callback
+// is safe to call with no extra marshaling needed.
+//
+// Blazor usage:
+//
+//   private string _stage = "";
+//   private double _percent = 0;
+//
+//   var progress = new Progress<OptimizerProgress>(p =>
+//   {
+//       _stage   = p.Stage;
+//       _percent = p.Percent;
+//       StateHasChanged();
+//   });
+//
+//   var result = await optimizer.OptimizeWeightsWithDiagnosticsAsync(
+//       cardIds, progress: progress);
+//
+// Stages fire in this order:
+//   1. "Loading histories"   - one tick per card, so this gives the most granular bar
+//   2. "Fetching logs"       - before and after the single batched query
+//   3. "Processing samples"  - before and after
+//   4. "Training"            - before only (FsrsTrainer is synchronous, no subdivision)
+//   5. "Complete"            - final tick once weights are returned
 // =====================================================================================
 
 // Diagnostic summary returned alongside the trained weights so callers can see
@@ -99,6 +136,16 @@ public class OptimizationResult
     public int HistoriesLoaded { get; init; }
     public int LogsLoaded { get; init; }
     public int SamplesGenerated { get; init; }
+}
+
+// Progress snapshot reported to IProgress<OptimizerProgress> during async optimization.
+// Bind Percent to a progress bar width; use Stage as a status label.
+public class OptimizerProgress
+{
+    public string Stage { get; init; } = "";
+    public int Current { get; init; }
+    public int Total { get; init; }
+    public double Percent => Total > 0 ? (double)Current / Total * 100.0 : 0;
 }
 
 public class FsrsOptimizationService
@@ -157,10 +204,13 @@ public class FsrsOptimizationService
     //
     // Trained weights should be saved to User.FSRSParameters.W — see file header for the
     // full save pattern.
+    //
+    // Pass a Progress<OptimizerProgress> for Blazor live status — see file header for usage.
     public async Task<double[]> OptimizeWeightsAsync(IEnumerable<int> cardIds,
-        int epochs = 5, int batchSize = 4096)
+        int epochs = 5, int batchSize = 4096,
+        IProgress<OptimizerProgress>? progress = null)
     {
-        var result = await OptimizeWeightsWithDiagnosticsAsync(cardIds, epochs, batchSize);
+        var result = await OptimizeWeightsWithDiagnosticsAsync(cardIds, epochs, batchSize, progress);
         return result.Weights;
     }
 
@@ -170,8 +220,11 @@ public class FsrsOptimizationService
     //
     // Trained weights should be saved to User.FSRSParameters.W — see file header for the
     // full save pattern.
+    //
+    // Pass a Progress<OptimizerProgress> for Blazor live status — see file header for usage.
     public async Task<OptimizationResult> OptimizeWeightsWithDiagnosticsAsync(IEnumerable<int> cardIds,
-        int epochs = 5, int batchSize = 4096)
+        int epochs = 5, int batchSize = 4096,
+        IProgress<OptimizerProgress>? progress = null)
     {
         if (_reviewHistoryRepository == null || _reviewLogFetcher == null)
             throw new InvalidOperationException(
@@ -188,12 +241,18 @@ public class FsrsOptimizationService
         // so this loop is unavoidable without a new repo method. this is the cheap leg of the
         // query though - typically a single indexed lookup per card.
         var reviewHistories = new List<ReviewHistory>();
-        foreach (var cardId in cardIdList)
+        for (int i = 0; i < cardIdList.Count; i++)
         {
-            var history = await _reviewHistoryRepository.GetReviewHistoryByCardIdAsync(cardId);
-            if (history == null) continue;
+            var history = await _reviewHistoryRepository.GetReviewHistoryByCardIdAsync(cardIdList[i]);
+            if (history != null)
+                reviewHistories.Add(history);
 
-            reviewHistories.Add(history);
+            progress?.Report(new OptimizerProgress
+            {
+                Stage   = "Loading histories",
+                Current = i + 1,
+                Total   = cardIdList.Count
+            });
         }
 
         if (reviewHistories.Count == 0)
@@ -202,8 +261,22 @@ public class FsrsOptimizationService
         // Step 2: bulk-fetch all logs for the loaded histories in one round-trip via the delegate.
         // This is the meaningful win over the previous per-id loop - avoids N round-trips when
         // the caller wired the delegate up to a `WHERE ReviewHistoryId IN (...)` style query.
+        progress?.Report(new OptimizerProgress
+        {
+            Stage   = "Fetching logs",
+            Current = 0,
+            Total   = 1
+        });
+
         var historyIds = reviewHistories.Select(h => h.Id).ToList();
         var logsByHistoryId = await _reviewLogFetcher(historyIds);
+
+        progress?.Report(new OptimizerProgress
+        {
+            Stage   = "Fetching logs",
+            Current = 1,
+            Total   = 1
+        });
 
         // Step 3: stitch logs back onto each history. histories with no logs get an empty list,
         // and the data processor will skip them (it requires >=2 reviews per history to emit a sample).
@@ -223,6 +296,13 @@ public class FsrsOptimizationService
 
         Console.WriteLine($"[FsrsOptimizationService] Loaded {reviewHistories.Count}/{cardIdList.Count} histories, {totalLogsLoaded} review logs total.");
 
+        progress?.Report(new OptimizerProgress
+        {
+            Stage   = "Processing samples",
+            Current = 0,
+            Total   = 1
+        });
+
         var samples = _processor.ProcessHistoryToSamples(reviewHistories);
 
         if (samples.Count == 0)
@@ -230,7 +310,28 @@ public class FsrsOptimizationService
                 $"Loaded {reviewHistories.Count} histories with {totalLogsLoaded} logs but no training samples could be generated. " +
                 "Each history needs at least 2 review logs to produce a sample.");
 
+        progress?.Report(new OptimizerProgress
+        {
+            Stage   = "Processing samples",
+            Current = 1,
+            Total   = 1
+        });
+
+        progress?.Report(new OptimizerProgress
+        {
+            Stage   = "Training",
+            Current = 0,
+            Total   = 1
+        });
+
         var weights = _trainer.Train(samples, epochs, batchSize);
+
+        progress?.Report(new OptimizerProgress
+        {
+            Stage   = "Complete",
+            Current = 1,
+            Total   = 1
+        });
 
         return new OptimizationResult
         {

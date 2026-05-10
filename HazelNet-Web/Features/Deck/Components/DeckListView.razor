@@ -1,7 +1,5 @@
 ﻿@using HazelNet_Application.CQRS.Abstractions
-@using HazelNet_Application.CQRS.Features.Cards.Queries
 @using HazelNet_Application.CQRS.Features.Decks.Commands
-@using HazelNet_Domain.Models
 
 @inject ICommandHandler<DeleteDeckCommand> DeleteDeckCommandHandler
 @inject ISnackbar Snackbar
@@ -9,97 +7,93 @@
 @inject ICommandHandler<UpdateDeckCommand> UpdateDeckHandler
 @inject ICommandHandler<ClearCardsInDeckCommand> ClearCardsInDeckHandler
 
-<MudCard Outlined="true"
-         Style=" min-height: 150px; width: 100%; 
-                         display: flex; flex-direction: column;">
-                    <MudCardHeader>
-                        <CardHeaderContent>
-                            <MudText Align="Align.Left" Typo="Typo.h5">
-                                @Deck.Name
+<MudCard Outlined="true" 
+         Class="pa-5"
+         Style="width: 100%;">
+    <MudCardContent>
+        <MudGrid Spacing="4" AlignItems="AlignItems.Center">
+
+            <MudItem xs="12" sm="5">
+                <MudText Typo="Typo.h4">@Deck.Name</MudText>
+                <MudText Typo="Typo.body1" GutterBottom="true">
+                    @Deck.Description
+                </MudText>
+
+                <MudStack Row="true" Spacing="6" Class="mt-4">
+                    <MudStack Spacing="0">
+                        <MudText Typo="Typo.overline">Last Studied</MudText>
+                        <MudText Typo="Typo.body2">@GetRelativeTime(Deck.LastDateAccessed)</MudText>
+                    </MudStack>
+                    <MudStack Spacing="0">
+                        <MudText Typo="Typo.overline">Due Today</MudText>
+                        <MudText Typo="Typo.body2" Color="Color.Error">@Deck.DueToday</MudText>
+                    </MudStack>
+                </MudStack>
+            </MudItem>
+
+
+            <MudItem xs="12" sm="7">
+                <MudStack Spacing="4">
+                   
+                    <div>
+                        <MudProgressLinear Color="Color.Info"
+                                           Value="@Deck.MasteredPercentage"
+                                           Size="Size.Large"
+                                           Class="mt-5"
+                                           Rounded="true" />
+                        <MudStack Row="true" Justify="Justify.SpaceBetween" Class="mt-1">
+                            <MudText Typo="Typo.caption">
+                                @Deck.MasteredCards / @Deck.TotalNumberOfCards mastered
                             </MudText>
-                        </CardHeaderContent>
-                    </MudCardHeader>
-
-                    <MudCardContent Class="d-flex flex-column">
-                        <MudText Typo="Typo.body2" Style="overflow-wrap: break-word; word-break: break-word;">
-                            @Deck.Description
-                        </MudText>
-                        <MudProgressLinear Color="Color.Info" Value="@Deck.MasteredPercentage"
-                                           Class="mt-5" Size="Size.Medium" Rounded="true" />
-                        
-                        <MudGrid Spacing="5" Class="d-flex justify-space-between mb-auto" >
-                            <MudItem>
-                                <MudText Typo="Typo.caption">
-                                    @Deck.MasteredCards/@Deck.TotalNumberOfCards
-                                </MudText>
-                            </MudItem>
-                            
-                            <MudItem>
-                                <MudText Typo="Typo.caption">
-                                    @Deck.MasteredPercentage%
-                                </MudText>
-                            </MudItem>
-                        </MudGrid>
-                        
-                        <MudDivider/>
-                        
-                        <MudStack Row="true" Spacing="5" Class="d-flex justify-space-between my-5" AlignItems="AlignItems.Center" >
-                            <MudItem>
-                                <MudText Typo="Typo.body2">
-                                    @GetRelativeTime(Deck.LastDateAccessed)
-                                </MudText>
-                            </MudItem>
-                            <MudChip T="int" Color="Color.Error" Size="Size.Small">
-                                @Deck.DueToday due
-                            </MudChip>
+                            <MudText Typo="Typo.caption">@Deck.MasteredPercentage%</MudText>
                         </MudStack>
-                        
-                        <MudGrid Justify="Justify.Center" Class="align-content-center" Spacing="2"> 
-                            <MudItem sm="10" Class="my-auto mx-auto">
-                                <MudButton Variant="Variant.Filled" Color="Color.Primary" 
-                                           Size="Size.Medium" FullWidth="true" OnClick="@StudyDeck"
-                                           >
-                                    Study Now
-                                </MudButton>
-                            </MudItem>
-    
-                            <MudItem sm="2" Class="my-auto mx-auto">
-                                
-                                <MudMenu Icon="@Icons.Material.Filled.MoreVert"
-                                         Color="Color.Default"
-                                         Size="Size.Medium"
-                                         TransformOrigin="Origin.BottomLeft"
-                                         Dense="true">
-                                    <MudMenuItem Icon="@Icons.Material.Filled.Edit"
-                                                 OnClick="@EditDeck">
-                                        Edit
-                                    </MudMenuItem>
-                                    <MudMenuItem Icon="@Icons.Material.Filled.CreditCard"
-                                                 OnClick="@ManageCard">
-                                        Cards
-                                    </MudMenuItem>
-                                    <MudMenuItem Icon="@Icons.Material.Filled.ClearAll"
-                                                 OnClick="@(() => ClearDeckOfCards(Deck.Id))">
-                                        Clear
-                                    </MudMenuItem>
-                                    <MudDivider />
-                                    <MudMenuItem Icon="@Icons.Material.Filled.Delete"
-                                                 IconColor="Color.Error"
-                                                 OnClick="@DeleteDeck">
-                                        <MudText Color="Color.Error">Delete</MudText>
-                                    </MudMenuItem>
-                                </MudMenu>
+                    </div>
 
-                            </MudItem>
-                        </MudGrid>
+                    <MudStack Row="true" Spacing="2" AlignItems="AlignItems.Center">
+                        <MudButton Variant="Variant.Filled"
+                                   Color="Color.Primary"
+                                   Size="Size.Small"
+                                   FullWidth="true"
+                                   OnClick="@StudyDeck">
+                            Study Now
+                        </MudButton>
+
+                        <MudMenu Icon="@Icons.Material.Filled.MoreVert"
+                                 Color="Color.Default"
+                                 Size="Size.Medium"
+                                 TransformOrigin="Origin.BottomLeft"
+                                 Dense="true">
+                            <MudMenuItem Icon="@Icons.Material.Filled.Edit"
+                                         OnClick="@EditDeck">
+                                Edit
+                            </MudMenuItem>
+                            <MudMenuItem Icon="@Icons.Material.Filled.CreditCard"
+                                         OnClick="@ManageCard">
+                                Cards
+                            </MudMenuItem>
+                            <MudMenuItem Icon="@Icons.Material.Filled.ClearAll"
+                                         OnClick="@(() => ClearDeckOfCards(Deck.Id))">
+                                Clear
+                            </MudMenuItem>
+                            <MudDivider />
+                            <MudMenuItem Icon="@Icons.Material.Filled.Delete"
+                                         IconColor="Color.Error"
+                                         OnClick="@DeleteDeck">
+                                <MudText Color="Color.Error">Delete</MudText>
+                            </MudMenuItem>
+                        </MudMenu>
                         
-                    </MudCardContent>
-                </MudCard>
-                
-                
+                        
+                    </MudStack>
+
+                </MudStack>
+            </MudItem>
+
+        </MudGrid>
+    </MudCardContent>
+</MudCard>
 
 @code {
-
     [Parameter] public DeckViewModel Deck { get; set; }
     [Parameter] public EventCallback<int> OnDeckDeleted { get; set; }
     [Parameter] public EventCallback<UpdateDeckCommand> OnDeckUpdated { get; set; }
@@ -313,6 +307,4 @@
             Snackbar.Add("An error occurred while clearing the deck.", Severity.Error);
         }
     }
-    
-
 }

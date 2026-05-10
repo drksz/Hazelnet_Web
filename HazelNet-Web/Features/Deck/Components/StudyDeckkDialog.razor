@@ -227,7 +227,7 @@
 
         try
         {
-            var command = new StudyCardCommand(UserId, _currentCard.Id, rating);
+            var command = new StudyCardCommand(UserId, DeckId, _currentCard.Id, rating);
             await StudyCardCommandHandler.Handle(command);
 
             _progress++;

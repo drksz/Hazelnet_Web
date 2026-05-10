@@ -7,13 +7,15 @@ namespace HazelNet_Application.CQRS.Features.Cards.Commands;
 
 public class StudyCardCommandHandler : ICommandHandler<StudyCardCommand>
 {
-    private ICardRepository _cardRepository;
-    private IReviewLogRepository _reviewLogRepository;
-    private IFSRSParametersRepository _fsrsParametersRepository;
-    private IReviewHistoryRepository _reviewHistoryRepository;
+    private readonly IDeckRepository _deckRepository;
+    private readonly ICardRepository _cardRepository;
+    private readonly IReviewLogRepository _reviewLogRepository;
+    private readonly IFSRSParametersRepository _fsrsParametersRepository;
+    private readonly IReviewHistoryRepository _reviewHistoryRepository;
 
-    public StudyCardCommandHandler(ICardRepository cardRepository, IReviewLogRepository reviewLogRepository, IFSRSParametersRepository fsrsParametersRepository, IReviewHistoryRepository reviewHistoryRepository)
+    public StudyCardCommandHandler(IDeckRepository deckRepository,ICardRepository cardRepository, IReviewLogRepository reviewLogRepository, IFSRSParametersRepository fsrsParametersRepository, IReviewHistoryRepository reviewHistoryRepository)
     {
+        _deckRepository = deckRepository;
         _cardRepository = cardRepository;
         _reviewLogRepository = reviewLogRepository;
         _fsrsParametersRepository = fsrsParametersRepository;
@@ -22,6 +24,13 @@ public class StudyCardCommandHandler : ICommandHandler<StudyCardCommand>
 
     public async Task Handle(StudyCardCommand command)
     {
+        var deck = await _deckRepository.GetDeckByIdAsync(command.deckId);
+        if (deck == null)
+            throw new Exception("Deck not found");
+        deck.LastAcess = DateTime.UtcNow;
+        
+        await _deckRepository.UpdateDeckAsync(deck);
+        
         var card = await _cardRepository.GetCardByIdAsync(command.CardId);
         if (card == null)
         {
@@ -48,7 +57,7 @@ public class StudyCardCommandHandler : ICommandHandler<StudyCardCommand>
         var result = fsrs.Next(card, now, command.Rating);
         card = result.Card;
         var reviewLog = result.ReviewLog;
-        reviewLog.ReviewHistory = history;
+        reviewLog.ReviewHistoryId = history.Id;
 
         // Both writes in one transaction
         await _reviewLogRepository.CreateAsync(reviewLog);

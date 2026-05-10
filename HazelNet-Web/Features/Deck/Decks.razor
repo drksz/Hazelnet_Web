@@ -105,14 +105,18 @@
         <MudItem sm="4" md="2"
                  Class="d-flex align-center justify-center">
             <MudButtonGroup Variant="Variant.Outlined" Size="Size.Large">
-                <MudIconButton Icon="@Icons.Material.Filled.List"></MudIconButton>
-                <MudIconButton Icon="@Icons.Material.Filled.GridView"></MudIconButton>
+                <MudIconButton Icon="@Icons.Material.Filled.GridView"
+                               Color="@(_isGridView ? Color.Primary : Color.Dark)"
+                               OnClick="() => SetView(true)"/>
+                <MudIconButton Icon="@Icons.Material.Filled.List"
+                               Color="@(_isGridView ? Color.Dark : Color.Primary)"
+                               OnClick="() => SetView(false)"/>
             </MudButtonGroup>
         </MudItem>
 
     </MudGrid>
     
-   <!-- Card Component-->
+   <!-- grid Component-->
     <MudGrid Spacing="5" Justify="Justify.Center" Class="mt-5 px-20">
 
         @if (_NumOfDecks == 0)
@@ -130,12 +134,25 @@
         }
         @foreach (var deck in FilteredDecks)
         {
-            <MudItem @key="deck.Id" sm="12" md="4" lg="3" Class="d-flex">
-                <DeckView Deck="deck" 
-                          OnDeckDeleted="RemoveDeckFromList"
-                          OnDeckUpdated="UpdateDeckInList"
-                          OnCardsUpdated="RefreshAfterSession"/>
-            </MudItem>
+            if (_isGridView)
+            {
+                <MudItem @key="deck.Id" sm="12" md="4" lg="3" Class="d-flex">
+                    <DeckView Deck="deck" 
+                              OnDeckDeleted="RemoveDeckFromList"
+                              OnDeckUpdated="UpdateDeckInList"
+                              OnCardsUpdated="RefreshAfterSession"/>
+                </MudItem>
+            }
+            else
+            {
+                <MudItem @key="deck.Id" sm="12" md="12", lg="12" xl="12">
+                    <DeckListView Deck="deck"
+                                  OnDeckDeleted="RemoveDeckFromList"
+                                  OnDeckUpdated="UpdateDeckInList"
+                                  OnCardsUpdated="RefreshAfterSession"/>
+                </MudItem>
+            }
+            
         }
 
     </MudGrid>
@@ -185,6 +202,12 @@
             if (!int.TryParse(StringUserId, out _UserId)) return;
             await RefreshPageData();
         }
+    }
+
+    private void SetView(bool isGrid)
+    {
+        _isGridView = isGrid;
+        StateHasChanged();
     }
     
     private async Task CreateNewDeck()

@@ -8,6 +8,7 @@ namespace HazelNet_Application.CQRS.Features.Cards.Commands;
 public record StudyCardCommand
 (
     int userId,
+    int deckId,
     int CardId,
     Rating Rating
 ) : ICommand;

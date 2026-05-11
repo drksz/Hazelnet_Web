@@ -17,7 +17,7 @@ public class GetDecksVMQueryHandler
     {
 
         var decks = await _deckRepository.GetAllDeckByUserIdAsync(query.UserId);
-        DateTime now = DateTime.UtcNow;
+        DateTime endOfToday = DateTime.UtcNow.Date.AddDays(1);
 
         var result = decks.Select(d => new DeckViewModel
         {
@@ -27,8 +27,8 @@ public class GetDecksVMQueryHandler
             TotalNumberOfCards = d.Cards.Count,
             LastDateAccessed = d.LastAcess,
             CreationDate = d.CreationDate,
-            DueToday = d.Cards.Count(c => c.State == State.New || c.Due <= now),
-            MasteredCards = d.Cards.Count(c => c.State == State.Review && c.Due > now),
+            DueToday = d.Cards.Count(c => c.State == State.New || c.Due <= endOfToday),
+            MasteredCards = d.Cards.Count(c => c.State == State.Review && c.Due > endOfToday),
             EarliestDueDate = d.Cards
             .Where(c => c.State != State.New)
             .MinBy(c => c.Due)?.Due

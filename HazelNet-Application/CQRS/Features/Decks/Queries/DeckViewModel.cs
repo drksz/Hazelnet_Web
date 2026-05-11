@@ -10,8 +10,8 @@
     public int DueToday { get; set; }
     public DateTime? EarliestDueDate { get; set; }
 
-    public double MasteredPercentage =>
+    public int MasteredPercentage =>
         TotalNumberOfCards == 0 ? 0 :
-            Math.Round((double)MasteredCards / TotalNumberOfCards * 100, 1);
+            (int)Math.Round((double)MasteredCards / TotalNumberOfCards * 100, 1);
     
 }

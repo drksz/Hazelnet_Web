@@ -1,181 +1,244 @@
 ﻿@page "/dashboard"
-
+@using HazelNet_Application.CQRS.Abstractions
+@using HazelNet_Application.CQRS.Abstractions.Identity
+@using HazelNet_Application.CQRS.Features.Cards.Queries
+@using HazelNet_Application.CQRS.Features.Decks.Queries
+@using HazelNet_Domain.Models
+@using HazelNet_Web.Features.Dashboard.Components
+@using HazelNet_Web.Services
 @using Microsoft.AspNetCore.Authorization
 @attribute [Authorize]
+
+@inject IQueryHandler<GetDecksVMQuery, List<DeckViewModel>> GetDecksVMHandler
+@inject IQueryHandler<GetAllCardsInDeckQuery, List<Card>> GetAllCardsInDeckQueryHandler 
+@inject IQueryHandler<GetAllDueCardsQuery, List<Card>> GetAllDueCardsQueryHandler
+@inject IQueryHandler<GetCountOfAllCardsQuery, int> GetCountOfAllCardsQueryHandler 
+@inject ICurrentUserService _currentUserService  
 
 
 <PageTitle>Dashboard</PageTitle>
 
-<MudContainer  Class="d-flex align-center pa-5 ma-5" Outlined="true">
-    <MudStack Spacing="0" Class="justify-center ">
-        <MudText Typo="Typo.h3">
-            Dashboard
-        </MudText>
-        <MudText Typo="Typo.body2" Style="opacity: 0.7;">
-            @_currentDateTime.ToString("dddd MMMM dd, yyyy");
-        </MudText>
-    </MudStack>
+<MudContainer MaxWidth="MaxWidth.ExtraExtraLarge" Class="py-6">
 
-    <MudSpacer/>
-    
-    <MudButton Variant="Variant.Outlined" Class="justify-center align-center"
-               EndIcon="@Icons.Material.Filled.ArrowOutward" Size="Size.Large">
-        Study due cards 
-    </MudButton>
+    <!-- Top Row: Daily Progress + Streak -->
+    <MudGrid Spacing="4" Class="mb-4">
+
+        <!-- Daily Progress -->
+        <MudItem xs="12" md="8">
+            <MudCard Elevation="0" 
+                     Outlined="true" 
+                     Style="border-radius:16px; height:100%;">
+                <MudCardContent Class="pa-5">
+                    
+                    <MudStack Spacing="10"
+                              Justify="Justify.Center">
+                        <div>
+                            <MudText Typo="Typo.overline" Style="opacity:0.6; letter-spacing:0.1em;">
+                                PROGRESS
+                            </MudText>
+                            <MudStack Row="true" AlignItems="AlignItems.Baseline" Spacing="1" Class="mb-2">
+                                <MudText Typo="Typo.h2">
+                                    @_cardsStudied / @_dailyGoal
+                                </MudText>
+                                <MudText Typo="Typo.h5">
+                                    cards studied
+                                </MudText>
+                            </MudStack>
+                        </div>
+                        
+                        
+                        <div>
+                            <MudStack Row="true" Justify="Justify.SpaceBetween" Class="mb-1">
+                                <MudText Typo="Typo.body2">
+                                    Daily Goal: @_progressPercent% Complete
+                                </MudText>
+                                <MudText Typo="Typo.body2" Color="Color.Primary">
+                                    @_cardsLeft left today
+                                </MudText>
+                            </MudStack>
+                            <MudProgressLinear Value="@_progressPercent" Color="Color.Primary"
+                                               Rounded="true" Size="Size.Medium"/>
+                        </div>
+                    </MudStack>
+                    
+                </MudCardContent>
+            </MudCard>
+        </MudItem>
+
+
+        <MudItem xs="12" md="4">
+            <!-- Quick Study -->
+            <MudCard Elevation="0"
+                     Style="border-radius:16px; background: linear-gradient(135deg, #1e3a8a, #2563EB); cursor:pointer;height: 100%">
+                <MudCardContent Class="pa-5 d-flex flex-column align-center justify-center" Style="text-align:center;">
+                    <MudIconButton Icon="@Icons.Material.Filled.PlayArrow"
+                                   Style="background:rgba(255,255,255,0.2); color:white; border-radius:50%; margin-bottom:8px;"
+                                   Size="Size.Large" />
+                    <MudText Typo="Typo.h6" Style="color:white; font-weight:700;">
+                        Quick Study
+                    </MudText>
+                    <MudText Typo="Typo.caption" Style="color:rgba(255,255,255,0.7);" Class="mt-1">
+                        Smart Session • 15 min
+                    </MudText>
+                </MudCardContent>
+            </MudCard>
+        </MudItem>
+
+    </MudGrid>
+
+    <!-- Bottom Row: Sidebar + Decks -->
+    <MudGrid Spacing="4">
+
+        <!-- Left Sidebar -->
+        <MudItem xs="12" md="3">
+            <MudStack Spacing="4">
+                
+                <!-- Upcoming Reviews -->
+                <MudCard Elevation="0" Outlined="true" Style="border-radius:16px;">
+                    <MudCardContent Class="pa-4">
+                        <MudText Typo="Typo.subtitle2" Style="font-weight:600; opacity:0.6;" Class="mb-3">
+                            Upcoming Reviews
+                        </MudText>
+                        <MudStack Spacing="3">
+                            @foreach (var review in _upcomingReviews)
+                            {
+                                <MudStack Row="true" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center">
+                                    <MudText Typo="Typo.body2">@review.Label</MudText>
+                                    <MudChip T="string" Size="Size.Small" Color="Color.Primary"
+                                             Style="font-size:0.65rem; font-weight:700; height:22px;">
+                                        @review.Count CARDS
+                                    </MudChip>
+                                </MudStack>
+                            }
+                        </MudStack>
+                    </MudCardContent>
+                </MudCard>
+
+            </MudStack>
+        </MudItem>
+
+        <!-- Recent Decks -->
+        <MudItem xs="12" md="9">
+            <MudStack Row="true" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center" Class="mb-3">
+                <MudText Typo="Typo.h6" Style="font-weight:700;">Recent Decks</MudText>
+                <MudLink Href="/decks" Color="Color.Primary" Typo="Typo.body2" Style="font-weight:600;">
+                    View All Decks
+                </MudLink>
+            </MudStack>
+
+            <MudGrid Spacing="3">
+                @foreach (var deck in _DeckList)
+                {
+                    <MudItem xs="12" sm="6">
+                        <DashboardDeckView Deck="deck"/>
+                    </MudItem>
+                }
+
+                <!-- Create New Deck -->
+                <MudItem xs="12" sm="6">
+                    <MudCard Elevation="0" Outlined="true"
+                             Style="border-radius:16px; cursor:pointer; border-style:dashed; height:100%;"
+                             Class="d-flex align-center justify-center">
+                        <MudCardContent Class="d-flex flex-column align-center justify-center pa-4"
+                                        Style="text-align:center;">
+                            <MudIcon Icon="@Icons.Material.Filled.AddCircleOutline"
+                                     Style="font-size:2rem; opacity:0.4;" Class="mb-2" />
+                            <MudText Typo="Typo.body2" Style="opacity:0.5; font-weight:600;">
+                                Create New Deck
+                            </MudText>
+                        </MudCardContent>
+                    </MudCard>
+                </MudItem>
+
+            </MudGrid>
+        </MudItem>
+
+    </MudGrid>
+
 </MudContainer>
 
-<MudCard Elevation="0" Outlined="true" Class="mx-5">
-    <MudStack Row="true" Spacing="15" AlignItems="AlignItems.Center" Justify="Justify.SpaceAround" Class="pa-3">
-        <MudStack Spacing="0" >
-            <MudText Typo="Typo.h2" Color="Color.Primary">
-                @_totalCards
-            </MudText>
-            <MudText Typo="Typo.body1">
-                Total cards
-            </MudText>
-            <MudText Typo="Typo.caption" Color="Color.Success">
-                @_newCards new cards
-            </MudText>
-        </MudStack>
-        
-        <MudStack Spacing="0" >
-            <MudText Typo="Typo.h2" Color="Color.Error">
-                @_dueToday
-            </MudText>
-            <MudText Typo="Typo.body1">
-                Due Today
-            </MudText>
-            <MudText Typo="Typo.caption" Color="Color.Success">
-                across @_acrossNumDecks decks
-            </MudText>
-        </MudStack>
-        
-        <MudStack Spacing="0" >
-            <MudText Typo="Typo.h2" Color="Color.Tertiary">
-                @_dayStreak
-            </MudText>
-            <MudText Typo="Typo.body1">
-                Day streak
-            </MudText>
-            <MudText Typo="Typo.caption" Color="Color.Success">
-                @_motivationalQuote
-            </MudText>
-        </MudStack>
-        
-        
-        <MudStack Spacing="0" >
-            <MudText Typo="Typo.h2" Color="Color.Primary">
-                @_avgMastery
-            </MudText>
-            <MudText Typo="Typo.body1">
-                Avg Mastery
-            </MudText>
-            <MudText Typo="Typo.caption" Color="Color.Success">
-                @_masteryThisWeek this week
-            </MudText>
-        </MudStack>
-        
-    </MudStack>
-</MudCard>
-
-<MudCard Elevation="0" Outlined="true" Class="ma-5 pa-5">
-    <MudText Typo="Typo.h3"  Align="Align.Center">
-        Month of @_currentDateTime.ToString("MMMM")
-    </MudText>
-    <MudChart ChartType="ChartType.HeatMap" ChartSeries="@_series" ChartOptions="@_options"
-              ChartLabels="@_xLabels" Width="100%" Height="350px"></MudChart>
-</MudCard>
-
-<MudGrid Justify="Justify.Center" Spacing="5" Class="align-center justify-center align-item-center pa-5">
-    <MudItem sm="12" md="6" lg="5">
-        <MudCard Elevation="0" Class="d-flex" >
-            <MudCardHeader>
-                <CardHeaderContent>
-                    Mastery by Deck
-                </CardHeaderContent>
-            </MudCardHeader>
-            <MudCardContent>
-
-            </MudCardContent>
-        </MudCard>
-    </MudItem>
+@code {
+    private List<DeckViewModel> _DeckList = new();
+    private List<Card>? _dueListCards = new();
+    private int _dueCount;
+    private int _UserId;
     
-    <MudItem sm="12" md="6" lg="7">
-        <MudCard Elevation="0" Class="d-flex" >
-            <MudCardHeader>
-                <CardHeaderContent>
-                    Due today
-                </CardHeaderContent>
-            </MudCardHeader>
-            <MudCardContent>
-
-            </MudCardContent>
-        </MudCard>
-    </MudItem>
+    // Daily progress
+    private int _cardsStudied;
+    private int _dailyGoal;
+    
+    private Dictionary<int, int> _dueCountPerDeck = new();
+    
+    private int _cardsLeft => _dailyGoal - _cardsStudied;
+    private int _progressPercent => (int)Math.Round((double)_cardsStudied / _dailyGoal * 100);
 
     
-</MudGrid>
 
-@code
-{
-    private DateTime _currentDateTime =  DateTime.Now;
-    private int _totalCards = 0;
-    private int _newCards = 0;
-    private int _dueToday = 0;
-    private int _acrossNumDecks = 0;
-    private int _dayStreak = 0;
-    private string _motivationalQuote = "You can do it!";
-    private double _avgMastery = 0;
-    private double _masteryThisWeek = 0;
-    
-    
-    //HeatMap
-    private readonly string[] _colors = ["#f0eeff", "#6355e0",  "#7e6fff"];
-    private List<ChartSeries<double>> _series = [];
-    private HeatMapChartOptions _options = new();
-    private XAxisLabelPosition _xAxisLabelPosition = XAxisLabelPosition.Bottom;
-    private YAxisLabelPosition _yAxisLabelPosition = YAxisLabelPosition.Left;
-    private string[] _xLabels;
+    private record UpcomingReview(string Label, int Count);
+    private List<UpcomingReview> _upcomingReviews = new();
 
-    protected override void OnInitialized()
+    protected override async Task OnInitializedAsync()
     {
-        base.OnInitialized();
-        WeeklyData();
-        BuildOptions();
-    }
 
-    private void BuildOptions()
-    {
-        var options = new HeatMapChartOptions
+        try
         {
-            ChartPalette = _colors,
-            YAxisLabelPosition = YAxisLabelPosition.Left,
-            ShowLegend = true,
-            XAxisLabelPosition = XAxisLabelPosition.None,
-            ShowToolTips = true,
-            ShowLabels = true
-        };
-        _options = options;
-    }
-
-    private void WeeklyData()
-    {
-        string[] xaxis = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
-        var heatMapSeries = new List<ChartSeries<double>>();
-        var dataPoints = xaxis.Length;
-        var data = new Double[dataPoints];
-        var random = new Random();
-        foreach (var x in xaxis)
-        {
-            for (int i = 0; i < dataPoints; i++)
+            var userIdString = await _currentUserService.GetUserIdAsync();
+        
+            if (!int.TryParse(userIdString, out _UserId))
             {
-                data[i] = random.Next(1, 101); 
+                throw new Exception("User is not authenticated or token is invalid.");
             }
-            heatMapSeries.Add(new() { Name = x, Data = data });
+            
+
+            var allDecks = await GetDecksVMHandler.Handle(new GetDecksVMQuery(_UserId));
+
+            _DeckList = allDecks
+                .OrderByDescending(c => c.LastDateAccessed)
+                .Take(3)
+                .ToList();
+
+            _dailyGoal = await GetCountOfAllCardsQueryHandler.Handle(new GetCountOfAllCardsQuery(_UserId));
+
+            // DueToday is already on the ViewModel — just sum it
+            _dueCount = allDecks.Sum(d => d.DueToday);
+            _cardsStudied = _dailyGoal - _dueCount;
+
+            await BuildUpcomingReviews(allDecks);
+
+            StateHasChanged();
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine(e);
+            throw;
         }
         
-        _xLabels = xaxis;
-        _series = heatMapSeries;
-        BuildOptions();
     }
+
+
+    private async Task BuildUpcomingReviews(List<DeckViewModel> decks)
+    {
+        var today = DateOnly.FromDateTime(DateTime.Today);
+        var allFutureCards = new List<Card>();
+
+        foreach (var deck in decks)
+        {
+            var allCards = await GetAllCardsInDeckQueryHandler.Handle(new GetAllCardsInDeckQuery(deck.Id));
+            allFutureCards.AddRange(allCards);
+        }
+
+        _upcomingReviews = allFutureCards
+            .Where(c => DateOnly.FromDateTime(c.Due.Date) > today)
+            .GroupBy(c => DateOnly.FromDateTime(c.Due.Date))
+            .OrderBy(g => g.Key)
+            .Take(5)
+            .Select(g =>
+            {
+                var daysAway = g.Key.DayNumber - today.DayNumber;
+                var label = daysAway == 1 ? "Tomorrow" : $"In {daysAway} days";
+                return new UpcomingReview(label, g.Count());
+            })
+            .ToList();
+    }
+   
 }

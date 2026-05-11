@@ -163,7 +163,7 @@
 @code {
     
     private List<DeckViewModel> _DeckList = new();
-    
+    private bool _isLoading = true;
     
     [CascadingParameter]
     private Task<AuthenticationState>? AuthStateTask { get; set; }
@@ -187,20 +187,32 @@
 
     protected override async Task OnInitializedAsync()
     {
-        if (AuthStateTask != null)
+        try
         {
-            var authState = await AuthStateTask;
-            var user = authState.User;
+            if (AuthStateTask != null)
+            {
+                var authState = await AuthStateTask;
+                var user = authState.User;
           
 
-            if (user.Identity is not null && user.Identity.IsAuthenticated)
-            {
-                _Username = user.Identity.Name;
-                _UserEmail = user.FindFirst(System.Security.Claims.ClaimTypes.Email)?.Value;
-                 StringUserId = user.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+                if (user.Identity is not null && user.Identity.IsAuthenticated)
+                {
+                    _Username = user.Identity.Name;
+                    _UserEmail = user.FindFirst(System.Security.Claims.ClaimTypes.Email)?.Value;
+                    StringUserId = user.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+                }
+                if (!int.TryParse(StringUserId, out _UserId)) return;
+                await RefreshPageData();
             }
-            if (!int.TryParse(StringUserId, out _UserId)) return;
-            await RefreshPageData();
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine(e);
+            throw;
+        }
+        finally
+        {
+            _isLoading = false;
         }
     }
 

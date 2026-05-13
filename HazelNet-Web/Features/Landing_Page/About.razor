@@ -1,8 +1,172 @@
-﻿@page "/About"
+﻿@page "/about"
 @layout HomeLayout
 
-<PageTitle>About</PageTitle>
+<PageTitle>About - HazelNet</PageTitle>
 
-@code {
-    
-}
+<!-- Hero -->
+<MudPaper Elevation="0" Style="background: linear-gradient(135deg, #1e1b4b 0%, #4c1d95 60%, #6d28d9 100%); border-radius: 0; padding: 80px 24px;">
+    <MudContainer MaxWidth="MaxWidth.Medium">
+        <MudText Typo="Typo.overline" Style="color: #c4b5fd;" Class="mb-2">
+            We're glad you're here!
+        </MudText>
+        <MudText Typo="Typo.h2" Style="color: white; max-width: 680px; line-height: 1.2;" Class="mb-5">
+            HazelNet was built to help students
+            <span style="color: #a78bfa;"> learn</span>
+            effectively without limitations.
+        </MudText>
+        <MudText Typo="Typo.body1" Style="color: #ddd6fe; max-width: 560px; line-height: 1.75;" Class="mb-8">
+            HazelNet is to provide a free, intuitive, and adaptive flashcard application
+            that helps learners study efficiently while retaining information longer.
+            We aim to remove financial barriers, reduce usability complexity, and
+            deliver a learning experience grounded in scientific research.
+        </MudText>
+        <MudButton Variant="Variant.Outlined"
+                   Style="border-color: white; color: white; border-radius: 20px; text-transform: none; font-weight: 600;"
+                   Size="Size.Medium">
+            About Us
+        </MudButton>
+    </MudContainer>
+</MudPaper>
+
+<!-- Group Photo -->
+<MudPaper Elevation="0" Style="border-radius: 0; overflow: hidden; max-height: 420px;">
+    <MudImage Src="/Images/TeamGroup.jpg" Fluid="true" Alt="HazelNet Team"
+              ObjectFit="ObjectFit.Cover"
+              Style="width: 100%; max-height: 420px; display: block;"/>
+</MudPaper>
+
+<!-- Who We Are -->
+<MudContainer MaxWidth="MaxWidth.Medium" Class="py-16">
+    <MudGrid Spacing="6" AlignItems="AlignItems.Center">
+
+        <MudItem xs="12" md="5">
+            <MudPaper Elevation="3" Style="border-radius: 16px; overflow: hidden; height: 320px;">
+                <MudImage Src="/Images/TeamSmall.jpg" Fluid="true" Alt="Who We Are"
+                          ObjectFit="ObjectFit.Cover"
+                          Style="width: 100%; height: 100%;"/>
+            </MudPaper>
+        </MudItem>
+
+        <MudItem xs="12" md="7">
+            <MudStack Spacing="4">
+                <MudText Typo="Typo.h4" GutterBottom="true">Who We Are</MudText>
+                <MudText Typo="Typo.body1" Style="line-height: 1.75">
+                    We are a team of Computer Science students from Bicol University who believe
+                    that high-quality learning tools should not be locked behind subscriptions
+                    or complicated interfaces.
+                </MudText>
+                <MudGrid Spacing="2" Class="mt-4">
+                    <MudItem xs="6">
+                        <MudText Typo="Typo.h3" Color="Color.Primary">3+</MudText>
+                        <MudText Typo="Typo.caption">YEARS EXPERIENCE</MudText>
+                    </MudItem>
+                    <MudItem xs="6">
+                        <MudText Typo="Typo.h3" Color="Color.Primary">2+</MudText>
+                        <MudText Typo="Typo.caption">PROJECTS</MudText>
+                    </MudItem>
+                </MudGrid>
+            </MudStack>
+        </MudItem>
+
+    </MudGrid>
+</MudContainer>
+
+<MudDivider/>
+
+<!-- Meet The Team -->
+<MudContainer MaxWidth="MaxWidth.Medium" Class="py-16">
+
+    <div class="d-flex flex-column align-center mb-12">
+        <MudText Typo="Typo.h3" Align="Align.Center" GutterBottom="true">Meet The Team</MudText>
+        <MudText Typo="Typo.body1" Align="Align.Center" Style="max-width: 520px">
+            HazelNet is developed by a collaborative team of Computer Science students,
+            each contributing their expertise to create a reliable and user-friendly learning system.
+        </MudText>
+    </div>
+
+    <!-- Row 1: 3 members -->
+    <MudGrid Spacing="5" Justify="Justify.Center" Class="mb-6">
+
+        <MudItem xs="12" sm="4" Class="d-flex flex-column align-center">
+            <MudAvatar Style="width: 120px; height: 120px; border: 3px solid #6d28d9;" Class="mb-3">
+                <MudImage Src="/Images/Team/Member1.jpg" Alt="John Lester" ObjectFit="ObjectFit.Cover"/>
+            </MudAvatar>
+            <MudText Typo="Typo.subtitle2" Align="Align.Center">JOHN LESTER L. JOLOC</MudText>
+            <MudText Typo="Typo.caption" Color="Color.Primary" Align="Align.Center">Backend Developer</MudText>
+        </MudItem>
+
+        <MudItem xs="12" sm="4" Class="d-flex flex-column align-center">
+            <MudAvatar Style="width: 120px; height: 120px; border: 3px solid #6d28d9;" Class="mb-3">
+                <MudImage Src="/Images/Team/Member2.jpg" Alt="Jomar Jake" ObjectFit="ObjectFit.Cover"/>
+            </MudAvatar>
+            <MudText Typo="Typo.subtitle2" Align="Align.Center">JOMAR JAKE D. MAPA</MudText>
+            <MudText Typo="Typo.caption" Color="Color.Primary" Align="Align.Center">AI / Machine Learning Developer</MudText>
+        </MudItem>
+
+        <MudItem xs="12" sm="4" Class="d-flex flex-column align-center">
+            <MudAvatar Style="width: 120px; height: 120px; border: 3px solid #6d28d9;" Class="mb-3">
+                <MudImage Src="/Images/Team/Member3.jpg" Alt="Carl Joseph" ObjectFit="ObjectFit.Cover"/>
+            </MudAvatar>
+            <MudText Typo="Typo.subtitle2" Align="Align.Center">CARL JOSEPH P. NACARIO</MudText>
+            <MudText Typo="Typo.caption" Color="Color.Primary" Align="Align.Center">UI / Frontend Developer</MudText>
+        </MudItem>
+
+    </MudGrid>
+
+    <!-- Row 2: 2 members centered -->
+    <MudGrid Spacing="5" Justify="Justify.Center">
+
+        <MudItem xs="12" sm="4" Class="d-flex flex-column align-center">
+            <MudAvatar Style="width: 120px; height: 120px; border: 3px solid #6d28d9;" Class="mb-3">
+                <MudImage Src="/Images/Team/Member4.jpg" Alt="Denis" ObjectFit="ObjectFit.Cover"/>
+            </MudAvatar>
+            <MudText Typo="Typo.subtitle2" Align="Align.Center">DEREK B. PAJARIN</MudText>
+            <MudText Typo="Typo.caption" Color="Color.Primary" Align="Align.Center">Quality Assurance Engineer</MudText>
+        </MudItem>
+
+        <MudItem xs="12" sm="4" Class="d-flex flex-column align-center">
+            <MudAvatar Style="width: 120px; height: 120px; border: 3px solid #6d28d9;" Class="mb-3">
+                <MudImage Src="/Images/Team/Member5.jpg" Alt="Ulton Michael" ObjectFit="ObjectFit.Cover"/>
+            </MudAvatar>
+            <MudText Typo="Typo.subtitle2" Align="Align.Center">VHON MICHAEL V. TABALAN</MudText>
+            <MudText Typo="Typo.caption" Color="Color.Primary" Align="Align.Center">Project Lead & Full Stack Developer</MudText>
+        </MudItem>
+
+    </MudGrid>
+
+</MudContainer>
+
+<MudDivider/>
+
+<!-- About Us Blurb -->
+<MudContainer MaxWidth="MaxWidth.Medium" Class="py-16">
+    <MudGrid Spacing="6" AlignItems="AlignItems.Center">
+
+        <MudItem xs="12" md="6">
+            <MudStack Spacing="4">
+                <MudText Typo="Typo.h4" GutterBottom="true">About Us</MudText>
+                <MudText Typo="Typo.body1" Style="line-height: 1.75">
+                    Our platform is built around spaced repetition, a proven learning method in
+                    cognitive psychology that improves long-term memory. By implementing the Free
+                    Spaced Repetition Scheduler (FSRS) algorithm and enhancing it with machine
+                    learning techniques, HazelNet intelligently schedules flashcard reviews based
+                    on each user's performance and learning pace.
+                </MudText>
+                <MudText Typo="Typo.body2" Style="font-style: italic; color: #6b7280;">
+                    "HazelNet is more than a flashcard app — it is our commitment to accessible,
+                    effective, and science-based learning."
+                </MudText>
+                <MudText Typo="Typo.caption">— HazelNet Team</MudText>
+            </MudStack>
+        </MudItem>
+
+        <MudItem xs="12" md="6">
+            <MudPaper Elevation="3" Style="border-radius: 16px; overflow: hidden; height: 300px;">
+                <MudImage Src="/Images/AboutUs.jpg" Fluid="true" Alt="About Us"
+                          ObjectFit="ObjectFit.Cover"
+                          Style="width: 100%; height: 100%;"/>
+            </MudPaper>
+        </MudItem>
+
+    </MudGrid>
+</MudContainer>

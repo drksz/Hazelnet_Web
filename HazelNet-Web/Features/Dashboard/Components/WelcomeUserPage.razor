@@ -1,0 +1,181 @@
+﻿@using HazelNet_Application.CQRS.Abstractions
+@using HazelNet_Application.CQRS.Abstractions.Identity
+@using HazelNet_Application.CQRS.Features.Decks.Commands
+@using HazelNet_Application.CQRS.Features.Decks.Queries
+@using Microsoft.AspNetCore.Authorization
+@inject IDialogService DialogService
+@inject NavigationManager Nav
+
+@inject ICurrentUserService _currentUserService  
+@inject ICommandHandler<CreateDeckCommand> CreateDeckHandler
+
+
+@attribute [Authorize]
+
+
+<MudContainer MaxWidth="MaxWidth.ExtraExtraLarge" Class="mt-3 pa-5">
+
+    <MudStack AlignItems="AlignItems.Center"
+              Justify="Justify.Center"
+              Spacing="5">
+        
+        <MudText Typo="Typo.h1"
+                 Align="Align.Center"
+                 Class="ma">
+            Welcome to
+            <span style="background: linear-gradient(90deg, #3b82f6, #8b5cf6); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">
+                HazelNet
+            </span>
+            , your new study space.
+        </MudText>
+
+        <MudText Typo="Typo.body1"
+                 Align="Align.Center"
+                 Class="">
+            The best way to master any subject is consistent, focused repetition.<br/>
+            Let's build your first deck and start your journey toward academic excellence.
+        </MudText>
+        
+        <MudGrid Spacing="5" Justify="Justify.Center" Class="pa-5 mx-5">
+            <MudItem>
+                <MudCard Class="pa-5" Elevation="5">
+                    <MudCardContent>
+                        <MudImage Src="/Images/WelcomeAssetPic.png"
+                                  Alt="HazelNet Logo" 
+                                  Class="mx-auto d-block rounded-lg" 
+                                  ObjectPosition="ObjectPosition.Center"
+                                  ObjectFit="ObjectFit.Cover"
+                                  Width="450"
+                                  Height="450"/>
+                    </MudCardContent>
+                </MudCard>
+            </MudItem>
+            
+            <MudItem>
+                <MudStack Spacing="3">
+                    <MudCard Class="pa-5" Elevation="5">
+                        <MudCardHeader>
+                            <MudText Typo="Typo.h4">
+                                Ready to Begin?
+                            </MudText>
+                        </MudCardHeader>
+                        <MudCardContent>
+                            Your library is currently empty. Choose a path to
+                            start populating your study material.
+                        </MudCardContent>
+
+                        <MudCardActions>
+                            <MudButton Variant="Variant.Filled" 
+                                       Size="Size.Large"
+                                       Color="Color.Primary"
+                                       StartIcon="@Icons.Material.Filled.Add"
+                                       OnClick="CreateNewDeck"
+                                       FullWidth="true">
+                                Create Your First Deck
+                            </MudButton>
+                        </MudCardActions>
+                    </MudCard>
+                    
+                    <MudCard Elevation="5"  
+                             Class="pa-2 rounded-lg">
+                        <MudCardContent Class="d-flex align-center gap-4 py-2">
+                            <MudAvatar Rounded="true" Style="background-color: #e3f2fd; color: #1976d2; width: 48px; height: 48px;">
+                                <MudIcon Icon="@Icons.Material.Outlined.Lightbulb" />
+                            </MudAvatar>
+                            <div>
+                                <MudText Typo="Typo.subtitle1" Style="font-weight: 600;">Quick Tip</MudText>
+                                <MudText Typo="Typo.body2" >Studies show that short, frequent sessions are more effective than long marathons.</MudText>
+                            </div>
+                        </MudCardContent>
+                    </MudCard>
+
+                    <MudCard Elevation="5"  
+                             Class="pa-2 rounded-lg">
+                        <MudCardContent Class="d-flex align-center gap-4 py-2">
+                            <MudAvatar Rounded="true" Style="background-color: #fbe9e7; color: #d84315; width: 48px; height: 48px;">
+                                <MudIcon Icon="@Icons.Material.Outlined.AutoAwesome" />
+                            </MudAvatar>
+                            <div>
+                                <MudText Typo="Typo.subtitle1" Style="font-weight: 600;">Focus Mode</MudText>
+                                <MudText Typo="Typo.body2">Try to Focus to minimize distractions during your study session.</MudText>
+                            </div>
+                        </MudCardContent>
+                    </MudCard>
+
+                    <MudCard Elevation="5"  
+                             Class="pa-2 rounded-lg">
+                        <MudCardContent Class="d-flex align-center gap-4 py-2">
+                            <MudAvatar Rounded="true" Style="background-color: #e8f5e9; color: #2e7d32; width: 48px; height: 48px;">
+                                <MudIcon Icon="@Icons.Material.Outlined.Timeline" />
+                            </MudAvatar>
+                            <div>
+                                <MudText Typo="Typo.subtitle1" Style="font-weight: 600;">Track Progress</MudText>
+                                <MudText Typo="Typo.body2">Review your statistics weekly to identify weak areas and adjust your study plan.</MudText>
+                            </div>
+                        </MudCardContent>
+                    </MudCard>
+
+                </MudStack>
+            </MudItem>
+        </MudGrid>
+
+    </MudStack>
+    
+</MudContainer>
+
+
+@code
+{
+    
+    public ObjectFit ImageFit { get; set; } = ObjectFit.Fill;
+    private int _UserId;
+    
+    protected override async Task OnInitializedAsync()
+    {
+
+        try
+        {
+            var userIdString = await _currentUserService.GetUserIdAsync();
+        
+            if (!int.TryParse(userIdString, out _UserId))
+            {
+                throw new Exception("User is not authenticated or token is invalid.");
+            }
+            
+            
+
+            StateHasChanged();
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine(e);
+            throw;
+        }
+        
+    }
+    
+    private async Task CreateNewDeck()
+    {
+        var parameters = new DialogParameters { ["UserId"] = _UserId };
+        
+        var options = new DialogOptions
+        {
+            MaxWidth = MaxWidth.Small,
+            FullWidth = true,
+            CloseButton = true,
+            CloseOnEscapeKey = true,
+            Position = DialogPosition.Center
+        };
+
+        var dialog = await DialogService.ShowAsync<CreateDeckDialog>("Create New Deck", parameters, options);
+        var result = await dialog.Result;
+
+        if (!result.Canceled && result.Data is CreateDeckCommand command)
+        { 
+            await CreateDeckHandler.Handle(command);
+            
+           Nav.NavigateTo("/Decks");
+            
+        }
+    }
+}

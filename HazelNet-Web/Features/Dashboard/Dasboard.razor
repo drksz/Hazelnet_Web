@@ -1,4 +1,5 @@
-﻿@page "/dashboard"
+﻿
+@page "/dashboard"
 @using HazelNet_Application.CQRS.Abstractions
 @using HazelNet_Application.CQRS.Abstractions.Identity
 @using HazelNet_Application.CQRS.Features.Cards.Queries
@@ -17,149 +18,199 @@
 
 
 <PageTitle>Dashboard</PageTitle>
+@if (_goalReached && _showGoalAlert)
+{
+    <MudAlert Severity="Severity.Success"
+              Variant="Variant.Filled"
+              Dense="true"
+              ShowCloseIcon="true"
+              Square="true"
+              Class="mt-5"
+              ContentAlignment="HorizontalAlignment.Center"
+              CloseIconClicked="() => _showGoalAlert = false">
+        You've hit your daily goal! Come back tomorrow.
+    </MudAlert>
+}
 
-<MudContainer MaxWidth="MaxWidth.ExtraExtraLarge" Class="py-6">
+@if (_deckCount != 0)
+    {
+        <MudContainer MaxWidth="MaxWidth.ExtraExtraLarge" Class="py-6">
+         <!-- Top Row: Daily Progress + Streak -->
+            <MudGrid Spacing="4" Class="mb-4">
 
-    <!-- Top Row: Daily Progress + Streak -->
-    <MudGrid Spacing="4" Class="mb-4">
+                <!-- Daily Progress -->
+                <MudItem xs="12" md="8">
+                    <MudCard Elevation="0" 
+                             Outlined="true" 
+                             Style="border-radius:16px; height:100%;">
+                        <MudCardContent Class="pa-5">
+                            
+                            <MudStack Spacing="10"
+                                      Justify="Justify.Center">
+                                
+                                <div>
+                                    <MudText Typo="Typo.overline" Style="opacity:0.6; letter-spacing:0.1em;">
+                                        PROGRESS
+                                    </MudText>
+                                    <MudStack Row="true" AlignItems="AlignItems.Baseline" Spacing="1" Class="mb-2">
+                                        <MudText Typo="Typo.h2">
+                                            @_cardsStudied / @_dailyGoal
+                                        </MudText>
+                                        <MudText Typo="Typo.h5">
+                                            cards studied
+                                        </MudText>
+                                    </MudStack>
+                                </div>
 
-        <!-- Daily Progress -->
-        <MudItem xs="12" md="8">
-            <MudCard Elevation="0" 
-                     Outlined="true" 
-                     Style="border-radius:16px; height:100%;">
-                <MudCardContent Class="pa-5">
-                    
-                    <MudStack Spacing="10"
-                              Justify="Justify.Center">
-                        <div>
-                            <MudText Typo="Typo.overline" Style="opacity:0.6; letter-spacing:0.1em;">
-                                PROGRESS
+                                <div>
+                                    @if (_hasNoCards)
+                                    {
+                                        <MudStack AlignItems="AlignItems.Center" Spacing="2" Class="py-4">
+                                            <MudIcon Icon="@Icons.Material.Outlined.FilterNone" Style="opacity:0.3; font-size:2.5rem;" />
+                                            <MudText Typo="Typo.body1" Style="opacity:0.5; text-align:center;">
+                                                No cards yet.<br/>Add cards to your decks to start tracking progress.
+                                            </MudText>
+                                        </MudStack>
+                                    }
+                                    else
+                                    {
+                                        <div>
+                                            <MudStack Row="true" Justify="Justify.SpaceBetween" Class="mb-1">
+                                                <MudText Typo="Typo.body2">Daily Goal: @_progressPercent% Complete</MudText>
+                                                <MudText Typo="Typo.body2" Color="Color.Primary">@_cardsLeft left today</MudText>
+                                            </MudStack>
+                                            <MudProgressLinear Value="@_progressPercent" Color="Color.Primary"
+                                                               Rounded="true" Size="Size.Medium"/>
+                                        </div>
+                                    }
+                                </div>
+                                
+                               
+
+                            </MudStack>
+                            
+                        </MudCardContent>
+                    </MudCard>
+                </MudItem>
+
+
+                <MudItem xs="12" md="4">
+                    <!-- Quick Study -->
+                    <MudCard Elevation="0"
+                             Style="border-radius:16px; background: linear-gradient(135deg, #1e3a8a, #2563EB); cursor:pointer;height: 100%">
+                        <MudCardContent Class="pa-5 d-flex flex-column align-center justify-center" Style="text-align:center;">
+                            <MudIconButton Icon="@Icons.Material.Filled.PlayArrow"
+                                           Style="background:rgba(255,255,255,0.2); color:white; border-radius:50%; margin-bottom:8px;"
+                                           Size="Size.Large" />
+                            <MudText Typo="Typo.h6" Style="color:white; font-weight:700;">
+                                Quick Study
                             </MudText>
-                            <MudStack Row="true" AlignItems="AlignItems.Baseline" Spacing="1" Class="mb-2">
-                                <MudText Typo="Typo.h2">
-                                    @_cardsStudied / @_dailyGoal
-                                </MudText>
-                                <MudText Typo="Typo.h5">
-                                    cards studied
-                                </MudText>
-                            </MudStack>
-                        </div>
-                        
-                        
-                        <div>
-                            <MudStack Row="true" Justify="Justify.SpaceBetween" Class="mb-1">
-                                <MudText Typo="Typo.body2">
-                                    Daily Goal: @_progressPercent% Complete
-                                </MudText>
-                                <MudText Typo="Typo.body2" Color="Color.Primary">
-                                    @_cardsLeft left today
-                                </MudText>
-                            </MudStack>
-                            <MudProgressLinear Value="@_progressPercent" Color="Color.Primary"
-                                               Rounded="true" Size="Size.Medium"/>
-                        </div>
-                    </MudStack>
-                    
-                </MudCardContent>
-            </MudCard>
-        </MudItem>
-
-
-        <MudItem xs="12" md="4">
-            <!-- Quick Study -->
-            <MudCard Elevation="0"
-                     Style="border-radius:16px; background: linear-gradient(135deg, #1e3a8a, #2563EB); cursor:pointer;height: 100%">
-                <MudCardContent Class="pa-5 d-flex flex-column align-center justify-center" Style="text-align:center;">
-                    <MudIconButton Icon="@Icons.Material.Filled.PlayArrow"
-                                   Style="background:rgba(255,255,255,0.2); color:white; border-radius:50%; margin-bottom:8px;"
-                                   Size="Size.Large" />
-                    <MudText Typo="Typo.h6" Style="color:white; font-weight:700;">
-                        Quick Study
-                    </MudText>
-                    <MudText Typo="Typo.caption" Style="color:rgba(255,255,255,0.7);" Class="mt-1">
-                        Smart Session • 15 min
-                    </MudText>
-                </MudCardContent>
-            </MudCard>
-        </MudItem>
-
-    </MudGrid>
-
-    <!-- Bottom Row: Sidebar + Decks -->
-    <MudGrid Spacing="4">
-
-        <!-- Left Sidebar -->
-        <MudItem xs="12" md="3">
-            <MudStack Spacing="4">
-                
-                <!-- Upcoming Reviews -->
-                <MudCard Elevation="0" Outlined="true" Style="border-radius:16px;">
-                    <MudCardContent Class="pa-4">
-                        <MudText Typo="Typo.subtitle2" Style="font-weight:600; opacity:0.6;" Class="mb-3">
-                            Upcoming Reviews
-                        </MudText>
-                        <MudStack Spacing="3">
-                            @foreach (var review in _upcomingReviews)
-                            {
-                                <MudStack Row="true" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center">
-                                    <MudText Typo="Typo.body2">@review.Label</MudText>
-                                    <MudChip T="string" Size="Size.Small" Color="Color.Primary"
-                                             Style="font-size:0.65rem; font-weight:700; height:22px;">
-                                        @review.Count CARDS
-                                    </MudChip>
-                                </MudStack>
-                            }
-                        </MudStack>
-                    </MudCardContent>
-                </MudCard>
-
-            </MudStack>
-        </MudItem>
-
-        <!-- Recent Decks -->
-        <MudItem xs="12" md="9">
-            <MudStack Row="true" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center" Class="mb-3">
-                <MudText Typo="Typo.h6" Style="font-weight:700;">Recent Decks</MudText>
-                <MudLink Href="/decks" Color="Color.Primary" Typo="Typo.body2" Style="font-weight:600;">
-                    View All Decks
-                </MudLink>
-            </MudStack>
-
-            <MudGrid Spacing="3">
-                @foreach (var deck in _DeckList)
-                {
-                    <MudItem xs="12" sm="6">
-                        <DashboardDeckView Deck="deck"/>
-                    </MudItem>
-                }
-
-                <!-- Create New Deck -->
-                <MudItem xs="12" sm="6">
-                    <MudCard Elevation="0" Outlined="true"
-                             Style="border-radius:16px; cursor:pointer; border-style:dashed; height:100%;"
-                             Class="d-flex align-center justify-center">
-                        <MudCardContent Class="d-flex flex-column align-center justify-center pa-4"
-                                        Style="text-align:center;">
-                            <MudIcon Icon="@Icons.Material.Filled.AddCircleOutline"
-                                     Style="font-size:2rem; opacity:0.4;" Class="mb-2" />
-                            <MudText Typo="Typo.body2" Style="opacity:0.5; font-weight:600;">
-                                Create New Deck
+                            <MudText Typo="Typo.caption" Style="color:rgba(255,255,255,0.7);" Class="mt-1">
+                                Smart Session • 15 min
                             </MudText>
                         </MudCardContent>
                     </MudCard>
                 </MudItem>
 
             </MudGrid>
-        </MudItem>
 
-    </MudGrid>
+            <!-- Bottom Row: Sidebar + Decks -->
+            <MudGrid Spacing="4">
 
-</MudContainer>
+                <!-- Left Sidebar -->
+                <MudItem xs="12" md="3">
+                    <MudStack Spacing="4">
+                        
+                        <!-- Upcoming Reviews -->
+                        <MudCard Elevation="0" Outlined="true" Style="border-radius:16px;">
+                            <MudCardContent Class="pa-4">
+                                <MudText Typo="Typo.subtitle2" Style="font-weight:600; opacity:0.6;" Class="mb-3">
+                                    Upcoming Reviews
+                                </MudText>
+                                <MudStack Spacing="3">
+                                    @if (_upcomingReviews.Any())
+                                    {
+                                        @foreach (var review in _upcomingReviews)
+                                        {
+                                            <MudStack Row="true" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center">
+                                                <MudText Typo="Typo.body2">@review.Label</MudText>
+                                                <MudChip T="string" Size="Size.Small" Color="Color.Primary"
+                                                         Style="font-size:0.65rem; font-weight:700; height:22px;">
+                                                    @review.Count CARDS
+                                                </MudChip>
+                                            </MudStack>
+                                        }
+                                    }
+                                    else
+                                    {
+                                        <MudStack AlignItems="AlignItems.Center" Spacing="1" Class="py-2">
+                                            <MudIcon Icon="@Icons.Material.Outlined.EventAvailable" Style="opacity:0.3; font-size:2rem;" />
+                                            <MudText Typo="Typo.body2" Style="opacity:0.5; text-align:center;">
+                                                No upcoming reviews.<br/>Start studying to build your schedule.
+                                            </MudText>
+                                        </MudStack>
+                                    }
+                                </MudStack>
+                            </MudCardContent>
+                        </MudCard>
+
+                    </MudStack>
+                </MudItem>
+
+                <!-- Recent Decks -->
+                <MudItem xs="12" md="9">
+                    <MudStack Row="true" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center" Class="mb-3">
+                        <MudText Typo="Typo.h6" Style="font-weight:700;">Recent Decks</MudText>
+                        <MudLink Href="/decks" Color="Color.Primary" Typo="Typo.body2" Style="font-weight:600;">
+                            View All Decks
+                        </MudLink>
+                    </MudStack>
+
+                    <MudGrid Spacing="3">
+                        
+                        @foreach (var deck in _DeckList)
+                        {
+                            <MudItem @key="deck.Id" xs="12" sm="6">
+                                <DashboardDeckView Deck="deck"/>
+                            </MudItem>
+                        }
+                        
+                        <!-- Create New Deck -->
+                        <MudItem xs="12" sm="6">
+                            <MudCard Elevation="0" Outlined="true"
+                                     Style="border-radius:16px; cursor:pointer; border-style:dashed; height:100%;"
+                                     Class="d-flex align-center justify-center">
+                                <MudCardContent Class="d-flex flex-column align-center justify-center pa-4"
+                                                Style="text-align:center;">
+                                    <MudIcon Icon="@Icons.Material.Filled.AddCircleOutline"
+                                             Style="font-size:2rem; opacity:0.4;" Class="mb-2"/>
+                                    <MudText Typo="Typo.body2" Style="opacity:0.5; font-weight:600;">
+                                        Create New Deck
+                                    </MudText>
+                                </MudCardContent>
+                            </MudCard>
+                        </MudItem>
+
+                    </MudGrid>
+                </MudItem>
+
+            </MudGrid>
+        </MudContainer>
+    }
+    
+else
+    {
+        <WelcomeUserPage/>
+    }
+    
 
 @code {
     private List<DeckViewModel> _DeckList = new();
-    private List<Card>? _dueListCards = new();
+
+    
+    private int _deckCount;
+
+    
     private int _dueCount;
     private int _UserId;
     
@@ -167,15 +218,19 @@
     private int _cardsStudied;
     private int _dailyGoal;
     
-    private Dictionary<int, int> _dueCountPerDeck = new();
     
-    private int _cardsLeft => _dailyGoal - _cardsStudied;
-    private int _progressPercent => (int)Math.Round((double)_cardsStudied / _dailyGoal * 100);
-
+    private int _cardsLeft => Math.Max(0, _dailyGoal - _cardsStudied);
+    private int _progressPercent => _dailyGoal == 0 ? 0
+        : (int)Math.Min(Math.Round((double)_cardsStudied / _dailyGoal * 100), 100);
+    
+    private bool _hasNoCards => _dailyGoal == 0 && _deckCount > 0;
+    private bool _goalReached => _dailyGoal > 0 && _cardsLeft == 0;
     
 
     private record UpcomingReview(string Label, int Count);
     private List<UpcomingReview> _upcomingReviews = new();
+    
+    private bool _showGoalAlert = true;
 
     protected override async Task OnInitializedAsync()
     {
@@ -192,11 +247,15 @@
 
             var allDecks = await GetDecksVMHandler.Handle(new GetDecksVMQuery(_UserId));
 
+            
+            
+            _deckCount = allDecks.Count;
             _DeckList = allDecks
                 .OrderByDescending(c => c.LastDateAccessed)
                 .Take(3)
                 .ToList();
-
+            
+            
             _dailyGoal = await GetCountOfAllCardsQueryHandler.Handle(new GetCountOfAllCardsQuery(_UserId));
 
             // DueToday is already on the ViewModel — just sum it
@@ -204,6 +263,7 @@
             _cardsStudied = _dailyGoal - _dueCount;
 
             await BuildUpcomingReviews(allDecks);
+            
 
             StateHasChanged();
         }
@@ -239,6 +299,7 @@
                 return new UpcomingReview(label, g.Count());
             })
             .ToList();
+        
     }
    
 }

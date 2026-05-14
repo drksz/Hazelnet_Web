@@ -158,6 +158,25 @@
     </MudGrid>
     
     
+    <span style="position: fixed; bottom: 32px; right: 50px; z-index: 1000;">
+        <MudTooltip Text="Retrains your flashcard scheduling weights based on your actual review history to make future due dates more accurate"
+                    Color="Color.Info"
+                    Placement="Placement.Top"
+                    ShowOnFocus="true"
+                    ShowOnHover="true">
+            <MudFab Color="Color.Primary"
+                    StartIcon="@Icons.Material.Filled.AutoAwesome"
+                    Size="Size.Large"
+                    IconSize="Size.Medium"
+                    Label="Optimize"
+                    Disabled="@(!CanOptimize())"
+                    Style="border-radius: 16px; text-transform: none; font-weight: 600;"
+                    OnClick="OnOptimizeClicked"/>
+        </MudTooltip>
+    </span>
+    
+    
+    
 </MudContainer>
 
 @code {
@@ -308,5 +327,12 @@
         ? _DeckList
         : _DeckList.Where(d => d.Name.Contains(_HighlightedText, StringComparison.OrdinalIgnoreCase)
                                || (d.Description?.Contains(_HighlightedText, StringComparison.OrdinalIgnoreCase) ?? false));
+
+
+    private bool CanOptimize() => _TotalCards > 0;
     
+    private async Task OnOptimizeClicked()
+    {
+      
+    }
 }

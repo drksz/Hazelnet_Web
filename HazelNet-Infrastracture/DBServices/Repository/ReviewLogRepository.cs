@@ -27,6 +27,19 @@ public class ReviewLogRepository : IReviewLogRepository
             .Where(rl => rl.ReviewHistoryId == reviewHistoryId)
             .ToListAsync();
     }  
+    
+    public async Task<IReadOnlyDictionary<int, List<ReviewLog>>> GetReviewLogsByHistoryIdsAsync(IEnumerable<int> historyIds)
+    {
+        await using var _context = await _contextFactory.CreateDbContextAsync();
+        var idList = historyIds.ToList();
+        var logs = await _context.ReviewLogs
+            .Where(r => idList.Contains(r.ReviewHistoryId))
+            .ToListAsync();
+
+        return logs
+            .GroupBy(r => r.ReviewHistoryId)
+            .ToDictionary(g => g.Key, g => g.ToList());
+    }
 
     public async Task UpdateAsync(ReviewLog reviewLog)
     {

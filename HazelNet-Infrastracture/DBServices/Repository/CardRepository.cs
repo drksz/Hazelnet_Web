@@ -72,4 +72,22 @@ public class CardRepository : ICardRepository
         await _context.Cards.AddAsync(card);
         await _context.SaveChangesAsync();
     }
+    
+    public async Task<List<int>> GetCardIdsByDeckIdAsync(int deckId)
+    {
+        await using var _context = await _contextFactory.CreateDbContextAsync();
+        return await _context.Cards
+            .Where(c => c.DeckId == deckId)
+            .Select(c => c.Id)
+            .ToListAsync();
+    }
+
+    public async Task<List<int>> GetCardIdsByUserIdAsync(int userId)
+    {
+        await using var _context = await _contextFactory.CreateDbContextAsync();
+        return await _context.Cards
+            .Where(c => c.Deck.UserId == userId)
+            .Select(c => c.Id)
+            .ToListAsync();
+    }
 }

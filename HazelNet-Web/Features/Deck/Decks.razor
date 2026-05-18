@@ -1,15 +1,17 @@
 ﻿@page "/decks"
 
-@using HazelNet_Domain.Models
+
 @using Microsoft.AspNetCore.Authorization
-@using System.Security.Claims
 @using HazelNet_Application.CQRS.Abstractions
 @using HazelNet_Application.CQRS.Features.Decks.Queries
-@using HazelNet_Application.CQRS.Abstractions
 @using HazelNet_Application.CQRS.Features.Cards.Queries
 @using HazelNet_Application.CQRS.Features.Decks.Commands
-@using HazelNet_Web.Features.Deck.Components
+@using HazelNet_Application.CQRS.Features.ReviewLogs.Commands
+
+@using HazelNet.Services.Optimizer
 @using Microsoft.AspNetCore.Components.Authorization
+
+@inject ICommandHandler<OptimizeWeightsCommand> OptimizeWeightsHandler
 
 @inject AuthenticationStateProvider AuthenticationStateProvider
 @inject IQueryHandler<GetDecksVMQuery, List<DeckViewModel>> GetDecksVMHandler
@@ -158,12 +160,59 @@
     </MudGrid>
     
     
+    <span style="position: fixed; bottom: 32px; right: 50px; z-index: 1000;">
+    
+        @if (_isOptimizing)
+        {
+            <MudPaper Elevation="3" Class="pa-3 mb-2" Style="min-width: 200px; border-radius: 12px;">
+                <MudText Typo="Typo.body2" Class="mb-1">@_stage</MudText>
+                <MudProgressLinear Value="@_percent" 
+                                   Color="Color.Success" 
+                                   Rounded="true"
+                                   Size="Size.Large"
+                                   Striped="true"/>
+                <MudText Typo="Typo.caption" Color="Color.Default">@($"{_percent:F0}%")</MudText>
+            </MudPaper>
+        }
+
+        @if (_errorMessage != null)
+        {
+            <MudAlert Severity="Severity.Error" Class="mb-2" Dense="true">@_errorMessage</MudAlert>
+        }
+
+        <MudTooltip Text="Retrains your flashcard scheduling weights based on your actual review history to make future due dates more accurate"
+                    Color="Color.Info"
+                    Placement="Placement.Top"
+                    ShowOnFocus="true"
+                    ShowOnHover="true">
+            <MudFab Color="Color.Primary"
+                    StartIcon="@Icons.Material.Filled.AutoAwesome"
+                    Size="Size.Large"
+                    IconSize="Size.Medium"
+                    Label="@(_isOptimizing ? "Optimizing..." : "Optimize")"
+                    Disabled="@(!CanOptimize())"
+                    Style="border-radius: 16px; text-transform: none; font-weight: 600;"
+                    OnClick="OnOptimizeClicked"/>
+        </MudTooltip>
+    
+    </span>
+    
+    
+    
+    
+    
 </MudContainer>
 
 @code {
     
     private List<DeckViewModel> _DeckList = new();
     private bool _isLoading = true;
+    private bool _isOptimizing = false;
+    private string _stage = "";
+    private double _percent = 0;
+    
+    private bool CanOptimize() => !_isOptimizing && _TotalCards > 0; 
+
     
     [CascadingParameter]
     private Task<AuthenticationState>? AuthStateTask { get; set; }
@@ -182,8 +231,8 @@
     private int _CompletedDecks;
 
     private bool _isGridView = true;
+    private string _errorMessage;
 
-    
 
     protected override async Task OnInitializedAsync()
     {
@@ -308,5 +357,43 @@
         ? _DeckList
         : _DeckList.Where(d => d.Name.Contains(_HighlightedText, StringComparison.OrdinalIgnoreCase)
                                || (d.Description?.Contains(_HighlightedText, StringComparison.OrdinalIgnoreCase) ?? false));
+
+
+    private async Task OnOptimizeClicked()
+    {
+        _isOptimizing = true;
+        _errorMessage = null;
+        _stage = "Starting...";
+        _percent = 0;
+        StateHasChanged();
+
+        try
+        {
+            var progress = new Progress<OptimizerProgress>(p =>
+            {
+                _stage = p.Stage;
+                _percent = p.Percent;
+                StateHasChanged();
+            });
+
+            var command = new OptimizeWeightsCommand(UserId: _UserId, Progress: progress);
+
+            await OptimizeWeightsHandler.Handle(command);
+            Snackbar.Add("Weights optimized successfully!", Severity.Success);
+
+
+
+        }
+        catch (Exception ex)
+        {
+            _errorMessage = ex.Message;
+        }
+        finally
+        {
+            _isOptimizing = false;
+            StateHasChanged();
+        }
+    }
     
+ 
 }

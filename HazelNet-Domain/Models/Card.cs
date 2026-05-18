@@ -10,7 +10,7 @@ public class Card
     
     //Navigation properties
     public int DeckId { get; set; }
-    public Deck Deck { get; set; } =  new Deck();
+    public Deck Deck { get; set; }
     
     public ReviewHistory ReviewHistory { get; set; }
     public int ReviewHistoryId { get; set; }

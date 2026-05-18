@@ -1,107 +1,495 @@
 ﻿@page "/insights"
-
 @using Microsoft.AspNetCore.Authorization
+@using Microsoft.AspNetCore.Components.Authorization
+@using HazelNet_Application.CQRS.Abstractions
+@using HazelNet_Application.CQRS.Features.ReviewLogs.Queries
+@using HazelNet_Application.CQRS.Features.Stats
+@using HazelNet_Web.Features.Insights.Components
+
+@inject IQueryHandler<GetUserStatQuery, UserStatsViewModel> GetStatsHandler
 @attribute [Authorize]
 
-<PageTitle>Insights</PageTitle>
+<MudContainer MaxWidth="MaxWidth.ExtraLarge" Class="mt-5">
 
-<MudPaper Class="d-flex align-center pa-5 ma-5" Outlined="true" Elevation="0">
-    
-    <MudText Typo="Typo.h4" Class="fw-bold">
-        Learning Analytics
+    <MudText Typo="Typo.h3" Class="mb-2">Statistics</MudText>
+    <MudText Typo="Typo.body2" Color="Color.Default" Class="mb-6">
+        @DateTime.Now.ToString("dddd, MMMM d yyyy")
     </MudText>
-    
-    <MudSpacer/>
-        
-    <div class="d-flex gap-8 text-center">
-        <div class="d-flex flex-column">
-            <MudText Typo="Typo.caption" Style="opacity: 0.7;">Cards Due</MudText>
-            <MudText Typo="Typo.h5" Color="Color.Error"><strong>11</strong></MudText>
-        </div>
-        
-        <div class="d-flex flex-column">
-            <MudText Typo="Typo.caption" Style="opacity: 0.7;">Mastered Cards</MudText>
-            <MudText Typo="Typo.h5" Color="Color.Info"><strong>142</strong></MudText>
-        </div>
 
-        <div class="d-flex flex-column">
-            <MudText Typo="Typo.caption" Style="opacity: 0.7;">Average Rate</MudText>
-            <MudText Typo="Typo.h5" Color="Color.Info"><strong>88.5%</strong></MudText>
-        </div>
-
-        <div class="d-flex flex-column">
-            <MudText Typo="Typo.caption" Style="opacity: 0.7;">Streak</MudText>
-            <MudText Typo="Typo.h5" Color="Color.Info"><strong>12 Days</strong></MudText>
-        </div>
-    </div>
-   
-</MudPaper>
-
-
-<MudPaper Class="d-flex align-center pa-4 ma-5" Outlined="true" Elevation="0">
-    
-    <MudContainer Class=" align-content-center align-center justify-center">
-        <MudChart T="double" ChartType="ChartType.Donut" Width="100%" Height="300px"
-                  LegendPosition="Position.Left" ChartLabels="@labels" ChartSeries="@([data])"/>
-    </MudContainer>
-    
-    <MudContainer Class="align-content-center align-center justify-center">
-        <MudText Typo="Typo.h4" Align="Align.Center">
-            Upcoming WorkLoad Forecast
-        </MudText>
-        <MudChart ChartType="ChartType.StackedBar" ChartSeries="@Series"
-                  ChartLabels="@XAxisLabels" Width="100%" Height="350px"/>
-    </MudContainer>
-    
-    <MudContainer Class="align-content-center align-center justify-center">
-        <MudChart ChartType="ChartType.Line" ChartSeries="@Series2" ChartLabels="@XAxisLabels2" Width="100%" Height="350px" CanHideSeries/>
-    </MudContainer>
-    
-    
-    
-</MudPaper>
-
-<MudPaper Class="d-flex align-center pa-4 ma-5" Outlined="true" Elevation="0">
-
-    
-</MudPaper>
-
-
-@code
-{
-    public double[] data = { 50, 25, 20, 5 };
-    public string[] labels = {"Mastered", "Reviewed", "Learning", "New"};   
-    
-    public List<ChartSeries<double>> Series = new List<ChartSeries<double>>()
+    @if (_isLoading)
     {
-        new() { Name = "Mastered", Data = new double[] { 40, 20, 25, 27, 46, 46, 48 } },
-        new() { Name = "Learning", Data = new double[] { 19, 24, 35, 13, 28, 15, 13 } },
-        new() { Name = "New", Data = new double[] { 8, 6, 11, 13, 4, 16, 10 } },
-    };
-    public string[] XAxisLabels = { "Sun", "Mon", "Tue", "Wed", "Thu", "Frid", "Sat"};
-    
-    
-    protected override void OnInitialized()
+        <MudProgressLinear Indeterminate="true" Color="Color.Primary"/>
+    }
+    else if (_stats != null)
     {
-        base.OnInitialized();
-        RandomizeData();
+        @* ── Smart Insights Banner ── *@
+        @if (_insights.Any())
+        {
+            <MudPaper Outlined="true" Square="true" Class="pa-4 mb-6" Style="border-radius: 16px;">
+                <MudText Typo="Typo.h6" Class="mb-3">
+                    <MudIcon Icon="@Icons.Material.Filled.AutoAwesome" Class="mr-1" Style="vertical-align: middle;"/>
+                    Insights
+                </MudText>
+                <MudGrid Spacing="2">
+                    @foreach (var insight in _insights)
+                    {
+                        <MudItem xs="12" sm="6" md="4">
+                            <MudAlert Severity="@insight.Severity"
+                                      Dense="true"
+                                      Icon="@insight.Icon"
+                                      Style="border-radius: 10px;">
+                                @insight.Message
+                            </MudAlert>
+                        </MudItem>
+                    }
+                </MudGrid>
+            </MudPaper>
+        }
+
+        @* ── Overview ── *@
+        <MudGrid Spacing="3" Class="mb-6">
+            <MudItem xs="6" sm="3">
+                <StatCard Label="Total Decks"   Value="@_stats.TotalDecks.ToString()"   Icon="@Icons.Material.Filled.LibraryBooks" Color="Color.Primary"/>
+            </MudItem>
+            <MudItem xs="6" sm="3">
+                <StatCard Label="Total Cards"   Value="@_stats.TotalCards.ToString()"   Icon="@Icons.Material.Filled.Style"        Color="Color.Info"/>
+            </MudItem>
+            <MudItem xs="6" sm="3">
+                <StatCard Label="Total Reviews" Value="@_stats.TotalReviews.ToString()" Icon="@Icons.Material.Filled.Reviews"      Color="Color.Tertiary"/>
+            </MudItem>
+            <MudItem xs="6" sm="3">
+                <StatCard Label="🔥 Streak"     Value="@($"{_stats.CurrentStreak}d")"   Icon="@Icons.Material.Filled.Whatshot"    Color="Color.Warning"/>
+            </MudItem>
+        </MudGrid>
+
+        @* ── Today ── *@
+        <MudGrid Spacing="3" Class="mb-6">
+            <MudItem xs="6" sm="3">
+                <StatCard Label="Reviews Today"  Value="@_stats.ReviewsToday.ToString()"            Color="Color.Info"/>
+            </MudItem>
+            <MudItem xs="6" sm="3">
+                <StatCard Label="Avg Stability"  Value="@($"{_stats.AverageStability:F1}d")"        Color="Color.Success"/>
+            </MudItem>
+            <MudItem xs="6" sm="3">
+                <StatCard Label="Avg Retention"  Value="@($"{_stats.AverageRetention:F1}%")"        Color="Color.Success"/>
+            </MudItem>
+            <MudItem xs="6" sm="3">
+                <StatCard Label="Custom Weights" Value="@(_stats.HasCustomWeights ? "Yes" : "No")"  Color="@(_stats.HasCustomWeights ? Color.Success : Color.Default)"/>
+            </MudItem>
+        </MudGrid>
+
+        @* ── Health Indicators ── *@
+        <MudPaper Outlined="true" Square="true" Class="pa-4 mb-6" Style="border-radius: 16px;">
+            <MudText Typo="Typo.h6" Class="mb-4">Learning Health</MudText>
+            <MudGrid Spacing="4">
+                <MudItem xs="12" sm="4">
+                    <MudText Typo="Typo.body2" Color="Color.Default" Class="mb-1">
+                        Maturity Rate
+                        <MudTooltip Text="Cards with stability > 21 days are considered mature.">
+                            <MudIcon Icon="@Icons.Material.Outlined.Info" Size="Size.Small" Style="vertical-align: middle; margin-left: 4px;"/>
+                        </MudTooltip>
+                    </MudText>
+                    <MudProgressLinear Value="@_maturityRate"
+                                       Color="@(_maturityRate >= 60 ? Color.Success : _maturityRate >= 30 ? Color.Warning : Color.Error)"
+                                       Rounded="true" Size="Size.Large" Class="mb-1"/>
+                    <MudText Typo="Typo.caption">@_stats.ReviewCards mature / @_stats.TotalCards total (@_maturityRate.ToString("F0")%)</MudText>
+                </MudItem>
+                <MudItem xs="12" sm="4">
+                    <MudText Typo="Typo.body2" Color="Color.Default" Class="mb-1">
+                        Retention
+                        <MudTooltip Text="Target: ≥ 90%. Measures how often you answer correctly on review.">
+                            <MudIcon Icon="@Icons.Material.Outlined.Info" Size="Size.Small" Style="vertical-align: middle; margin-left: 4px;"/>
+                        </MudTooltip>
+                    </MudText>
+                    <MudProgressLinear Value="@_stats.AverageRetention"
+                                       Color="@(_stats.AverageRetention >= 90 ? Color.Success : _stats.AverageRetention >= 75 ? Color.Warning : Color.Error)"
+                                       Rounded="true" Size="Size.Large" Class="mb-1"/>
+                    <MudText Typo="Typo.caption">@_stats.AverageRetention.ToString("F1")% (target ≥ 90%)</MudText>
+                </MudItem>
+                <MudItem xs="12" sm="4">
+                    <MudText Typo="Typo.body2" Color="Color.Default" Class="mb-1">
+                        Good/Easy Rate
+                        <MudTooltip Text="Percentage of reviews rated Good or Easy out of all ratings.">
+                            <MudIcon Icon="@Icons.Material.Outlined.Info" Size="Size.Small" Style="vertical-align: middle; margin-left: 4px;"/>
+                        </MudTooltip>
+                    </MudText>
+                    <MudProgressLinear Value="@_goodEasyRate"
+                                       Color="@(_goodEasyRate >= 70 ? Color.Success : _goodEasyRate >= 50 ? Color.Warning : Color.Error)"
+                                       Rounded="true" Size="Size.Large" Class="mb-1"/>
+                    <MudText Typo="Typo.caption">@(_stats.GoodCount + _stats.EasyCount) good+easy / @_totalRatings total (@_goodEasyRate.ToString("F0")%)</MudText>
+                </MudItem>
+            </MudGrid>
+        </MudPaper>
+
+        @* ── Per-Deck Table ── *@
+        <MudPaper Outlined="true" Square="true" Class="mb-6 pa-4" Style="border-radius: 16px;">
+            <MudText Typo="Typo.h6" Class="mb-4">Deck Breakdown</MudText>
+            <MudTable Items="_stats.DeckStats"
+                      Dense="true"
+                      Bordered="true"
+                      Hover="true"
+                      Elevation="0"
+                      SortLabel="Sort By">
+                <HeaderContent>
+                    <MudTh><MudTableSortLabel SortBy="new Func<DeckStat, object>(x => x.DeckName)">Deck</MudTableSortLabel></MudTh>
+                    <MudTh><MudTableSortLabel SortBy="new Func<DeckStat, object>(x => x.TotalCards)">Cards</MudTableSortLabel></MudTh>
+                    <MudTh><MudTableSortLabel SortBy="new Func<DeckStat, object>(x => x.DueToday)">Due Today</MudTableSortLabel></MudTh>
+                    <MudTh><MudTableSortLabel SortBy="new Func<DeckStat, object>(x => x.MatureCards)">Mature</MudTableSortLabel></MudTh>
+                    <MudTh>Maturity %</MudTh>
+                    <MudTh><MudTableSortLabel SortBy="new Func<DeckStat, object>(x => x.AverageStability)">Avg Stability</MudTableSortLabel></MudTh>
+                </HeaderContent>
+                <RowTemplate>
+                    <MudTd DataLabel="Deck">@context.DeckName</MudTd>
+                    <MudTd DataLabel="Cards">@context.TotalCards</MudTd>
+                    <MudTd DataLabel="Due Today">
+                        <MudChip T="string" Size="Size.Small"
+                                 Color="@(context.DueToday > 0 ? Color.Error : Color.Success)">
+                            @context.DueToday
+                        </MudChip>
+                    </MudTd>
+                    <MudTd DataLabel="Mature">@context.MatureCards</MudTd>
+                    <MudTd DataLabel="Maturity %">
+                        @{
+                            var pct = context.TotalCards > 0
+                                ? (double)context.MatureCards / context.TotalCards * 100
+                                : 0;
+                        }
+                        <div style="display: flex; align-items: center; gap: 8px;">
+                            <MudProgressLinear Value="@pct"
+                                               Color="@(pct >= 60 ? Color.Success : pct >= 30 ? Color.Warning : Color.Error)"
+                                               Rounded="true" Size="Size.Small"
+                                               Style="width: 80px; flex-shrink: 0;"/>
+                            <MudText Typo="Typo.caption">@pct.ToString("F0")%</MudText>
+                        </div>
+                    </MudTd>
+                    <MudTd DataLabel="Avg Stability">@($"{context.AverageStability:F1}d")</MudTd>
+                </RowTemplate>
+            </MudTable>
+        </MudPaper>
+
+        @* ── Card States + Rating Distribution ── *@
+        <MudGrid Spacing="3" Class="mb-6">
+            <MudItem xs="12" md="6">
+                <MudPaper Outlined="true" Square="true" Class="pa-4" Style="border-radius: 16px; height: 100%;">
+                    <MudText Typo="Typo.h6" Class="mb-4">Card States</MudText>
+                    <div style="display: flex; justify-content: center;">
+                        <MudChart ChartType="ChartType.Pie"
+                                  T="double"
+                                  Width="300px"
+                                  Height="300px"
+                                  ChartSeries="@_cardStateSeries"
+                                  ChartLabels="@_cardStateLabels"
+                                  ChartOptions="@_cardStateOptions"/>
+                    </div>
+                    <MudGrid Class="mt-2" Justify="Justify.Center">
+                        <MudItem><MudChip T="string" Color="Color.Default"  Size="Size.Small">New @_stats.NewCards</MudChip></MudItem>
+                        <MudItem><MudChip T="string" Color="Color.Warning"  Size="Size.Small">Learning @_stats.LearningCards</MudChip></MudItem>
+                        <MudItem><MudChip T="string" Color="Color.Success"  Size="Size.Small">Review @_stats.ReviewCards</MudChip></MudItem>
+                        <MudItem><MudChip T="string" Color="Color.Error"    Size="Size.Small">Relearning @_stats.RelearningCards</MudChip></MudItem>
+                    </MudGrid>
+                </MudPaper>
+            </MudItem>
+
+            <MudItem xs="12" md="6">
+                <MudPaper Outlined="true" Square="true" Class="pa-4" Style="border-radius: 16px; height: 100%;">
+                    <MudText Typo="Typo.h6" Class="mb-4">Rating Distribution</MudText>
+                    <div style="display: flex; justify-content: center;">
+                        <MudChart ChartType="ChartType.Pie"
+                                  T="double"
+                                  Width="300px"
+                                  Height="300px"
+                                  ChartSeries="@_ratingSeries"
+                                  ChartLabels="@_ratingLabels"
+                                  ChartOptions="@_ratingOptions"/>
+                    </div>
+                    <MudGrid Class="mt-2" Justify="Justify.Center">
+                        <MudItem><MudChip T="string" Color="Color.Error"   Size="Size.Small">Again @_stats.AgainCount</MudChip></MudItem>
+                        <MudItem><MudChip T="string" Color="Color.Warning" Size="Size.Small">Hard @_stats.HardCount</MudChip></MudItem>
+                        <MudItem><MudChip T="string" Color="Color.Success" Size="Size.Small">Good @_stats.GoodCount</MudChip></MudItem>
+                        <MudItem><MudChip T="string" Color="Color.Info"    Size="Size.Small">Easy @_stats.EasyCount</MudChip></MudItem>
+                    </MudGrid>
+                </MudPaper>
+            </MudItem>
+        </MudGrid>
+
+        @* ── Daily Reviews Bar + Cumulative Line ── *@
+        <MudPaper Outlined="true" Square="true" Class="pa-4 mb-6" Style="border-radius: 16px;">
+            <div style="display: flex; justify-content: space-between; align-items: center;" Class="mb-1">
+                <MudText Typo="Typo.h6">Reviews — Last 30 Days</MudText>
+                <div style="display: flex; gap: 16px; align-items: center;">
+                    <div style="display: flex; align-items: center; gap: 6px;">
+                        <div style="width:12px; height:12px; background:#5C6BC0; border-radius:2px;"></div>
+                        <MudText Typo="Typo.caption">Daily</MudText>
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 6px;">
+                        <div style="width:12px; height:3px; background:#26A69A;"></div>
+                        <MudText Typo="Typo.caption">Cumulative</MudText>
+                    </div>
+                </div>
+            </div>
+            <MudText Typo="Typo.caption" Color="Color.Default" Class="mb-4">
+                Peak: @_peakDay reviews on @_peakDate &nbsp;·&nbsp; 30-day total: @_thirtyDayTotal reviews &nbsp;·&nbsp; Daily avg: @_dailyAvg.ToString("F1")
+            </MudText>
+            <MudChart ChartType="ChartType.Bar"
+                      T="double"
+                      Width="100%"
+                      Height="350px"
+                      ChartSeries="@_dailyReviewSeries"
+                      XAxisLabels="@_dailyReviewLabels"
+                      ChartOptions="@_barOptions"/>
+        </MudPaper>
+
+        @* ── Due Forecast ── *@
+        @if (_stats.DeckStats.Any(d => d.DueToday > 0))
+        {
+            <MudPaper Outlined="true" Square="true" Class="pa-4 mb-6" Style="border-radius: 16px;">
+                <MudText Typo="Typo.h6" Class="mb-1">Due Today by Deck</MudText>
+                <MudText Typo="Typo.caption" Color="Color.Default" Class="mb-4">
+                    @_stats.DeckStats.Sum(d => d.DueToday) cards pending across @_stats.DeckStats.Count(d => d.DueToday > 0) decks
+                </MudText>
+                <MudChart ChartType="ChartType.Bar"
+                          T="double"
+                          Width="100%"
+                          Height="250px"
+                          ChartSeries="@_dueForecastSeries"
+                          XAxisLabels="@_dueForecastLabels"
+                          ChartOptions="@_forecastBarOptions"/>
+            </MudPaper>
+        }
     }
 
-    public List<ChartSeries<double>> Series2 = new List<ChartSeries<double>>();
-    public string[] XAxisLabels2 = {"Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep" };
+</MudContainer>
 
-    Random random = new Random();
-    public void RandomizeData()
+@code {
+    // ── record for insight alerts ───────────────────────────────────────────
+    private record InsightAlert(string Message, Severity Severity, string Icon);
+
+    [CascadingParameter] private Task<AuthenticationState>? AuthStateTask { get; set; }
+
+    private UserStatsViewModel? _stats;
+    private bool _isLoading = true;
+    private int _userId;
+
+    // Computed scalars
+    private double _maturityRate;
+    private double _goodEasyRate;
+    private int    _totalRatings;
+    private int    _thirtyDayTotal;
+    private double _dailyAvg;
+    private int    _peakDay;
+    private string _peakDate = "";
+
+    // Smart insights
+    private List<InsightAlert> _insights = new();
+
+    // Card States pie
+    private List<ChartSeries<double>> _cardStateSeries = new();
+    private string[] _cardStateLabels = Array.Empty<string>();
+
+    // Rating Distribution pie
+    private List<ChartSeries<double>> _ratingSeries = new();
+    private string[] _ratingLabels = Array.Empty<string>();
+
+    // Daily Reviews bar + cumulative line
+    private List<ChartSeries<double>> _dailyReviewSeries = new();
+    private string[] _dailyReviewLabels = Array.Empty<string>();
+
+    // Due Forecast bar
+    private List<ChartSeries<double>> _dueForecastSeries = new();
+    private string[] _dueForecastLabels = Array.Empty<string>();
+
+    private readonly PieChartOptions _cardStateOptions = new()
     {
-        var newSeries = new List<ChartSeries<double>>();
-        for (int s = 1; s <= 10; s++)
+        ChartPalette = new[] { "#9E9E9E", "#FF9800", "#4CAF50", "#F44336" },
+        ShowLegend = false
+    };
+
+    private readonly PieChartOptions _ratingOptions = new()
+    {
+        ChartPalette = new[] { "#F44336", "#FF9800", "#4CAF50", "#2196F3" },
+        ShowLegend = false
+    };
+
+    private readonly BarChartOptions _barOptions = new()
+    {
+        YAxisTicks  = 1,
+        ShowLegend  = false,
+        ChartPalette = new[] { "#5C6BC0", "#26A69A" }
+    };
+
+    private readonly BarChartOptions _forecastBarOptions = new()
+    {
+        YAxisTicks  = 1,
+        ShowLegend  = false,
+        ChartPalette = new[] { "#EF5350" }
+    };
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (AuthStateTask != null)
         {
-            var series = new ChartSeries<double>() { Name = $"Deck {s}", Data = new double[9] };
-            for (int i = 0; i < 9; i++)
-                series.Data[i].Y = random.NextDouble() * 100;
-            newSeries.Add(series);
+            var authState = await AuthStateTask;
+            var idStr = authState.User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+            if (!int.TryParse(idStr, out _userId)) return;
+
+            _stats = await GetStatsHandler.Handle(new GetUserStatQuery(_userId));
+
+            if (_stats != null)
+            {
+                ComputeScalars();
+                ProcessChartData();
+                BuildInsights();
+            }
         }
-        Series2 = newSeries;
-        StateHasChanged();
+        _isLoading = false;
+    }
+
+    // ── Derived scalars ─────────────────────────────────────────────────────
+    private void ComputeScalars()
+    {
+        _maturityRate = _stats!.TotalCards > 0
+            ? (double)_stats.ReviewCards / _stats.TotalCards * 100
+            : 0;
+
+        _totalRatings = _stats.AgainCount + _stats.HardCount + _stats.GoodCount + _stats.EasyCount;
+
+        _goodEasyRate = _totalRatings > 0
+            ? (double)(_stats.GoodCount + _stats.EasyCount) / _totalRatings * 100
+            : 0;
+
+        var dailyCounts = _stats.DailyReviews.Select(d => d.Count).ToList();
+        _thirtyDayTotal = dailyCounts.Sum();
+        _dailyAvg       = dailyCounts.Count > 0 ? (double)_thirtyDayTotal / dailyCounts.Count : 0;
+        _peakDay        = dailyCounts.Count > 0 ? dailyCounts.Max() : 0;
+
+        var peakEntry = _stats.DailyReviews.OrderByDescending(d => d.Count).FirstOrDefault();
+        _peakDate = peakEntry != default ? peakEntry.Date.ToString("MMM d") : "—";
+    }
+
+    // ── Smart insights ───────────────────────────────────────────────────────
+    private void BuildInsights()
+    {
+        _insights.Clear();
+
+        // Streak
+        if (_stats!.CurrentStreak >= 7)
+            _insights.Add(new($"🔥 {_stats.CurrentStreak}-day streak! Keep it going.", Severity.Success, Icons.Material.Filled.Whatshot));
+        else if (_stats.CurrentStreak == 0)
+            _insights.Add(new("No active streak. Review today to start one!", Severity.Warning, Icons.Material.Filled.Alarm));
+
+        // Retention
+        if (_stats.AverageRetention >= 90)
+            _insights.Add(new($"Retention at {_stats.AverageRetention:F1}% — right on target (≥ 90%).", Severity.Success, Icons.Material.Filled.CheckCircle));
+        else if (_stats.AverageRetention < 75)
+            _insights.Add(new($"Retention is {_stats.AverageRetention:F1}% — consider slowing new card introductions.", Severity.Error, Icons.Material.Filled.Warning));
+        else
+            _insights.Add(new($"Retention at {_stats.AverageRetention:F1}% — a bit below the 90% target.", Severity.Warning, Icons.Material.Filled.TrendingDown));
+
+        // Relearning pile
+        if (_stats.RelearningCards > 0)
+        {
+            var relearningPct = _stats.TotalCards > 0
+                ? (double)_stats.RelearningCards / _stats.TotalCards * 100 : 0;
+            if (relearningPct > 10)
+                _insights.Add(new($"{_stats.RelearningCards} cards ({relearningPct:F0}%) are in relearning — you may need to slow down.", Severity.Warning, Icons.Material.Filled.Refresh));
+        }
+
+        // Good/Easy rate
+        if (_goodEasyRate >= 80)
+            _insights.Add(new($"{_goodEasyRate:F0}% of reviews rated Good or Easy — great recall!", Severity.Success, Icons.Material.Filled.ThumbUp));
+        else if (_goodEasyRate < 50 && _totalRatings > 10)
+            _insights.Add(new($"Only {_goodEasyRate:F0}% Good/Easy — material may need more review passes.", Severity.Warning, Icons.Material.Filled.School));
+
+        // Consistency
+        var activeDays = _stats.DailyReviews.Count(d => d.Count > 0);
+        var totalDays  = _stats.DailyReviews.Count;
+        if (totalDays > 0)
+        {
+            var consistency = (double)activeDays / totalDays * 100;
+            if (consistency < 50)
+                _insights.Add(new($"Only {activeDays}/{totalDays} days active — daily reviews build stronger memory.", Severity.Info, Icons.Material.Filled.CalendarMonth));
+        }
+
+        // Maturity
+        if (_maturityRate >= 70)
+            _insights.Add(new($"{_maturityRate:F0}% of cards are mature — your knowledge is consolidating well.", Severity.Success, Icons.Material.Filled.AutoGraph));
+
+        // Due pressure
+        var totalDue = _stats.DeckStats.Sum(d => d.DueToday);
+        if (totalDue > 50)
+            _insights.Add(new($"{totalDue} cards due today — a heavy session ahead!", Severity.Warning, Icons.Material.Filled.PriorityHigh));
+        else if (totalDue == 0)
+            _insights.Add(new("You're all caught up for today. 🎉", Severity.Success, Icons.Material.Filled.DoneAll));
+    }
+
+    // ── Charts ───────────────────────────────────────────────────────────────
+    private void ProcessChartData()
+    {
+        // Card States pie
+        _cardStateSeries = new List<ChartSeries<double>>
+        {
+            new()
+            {
+                Data = new double[]
+                {
+                    _stats!.NewCards,
+                    _stats.LearningCards,
+                    _stats.ReviewCards,
+                    _stats.RelearningCards
+                }
+            }
+        };
+        _cardStateLabels = new[] { "New", "Learning", "Review", "Relearning" };
+
+        // Rating Distribution pie
+        _ratingSeries = new List<ChartSeries<double>>
+        {
+            new()
+            {
+                Data = new double[]
+                {
+                    _stats.AgainCount,
+                    _stats.HardCount,
+                    _stats.GoodCount,
+                    _stats.EasyCount
+                }
+            }
+        };
+        _ratingLabels = new[] { "Again", "Hard", "Good", "Easy" };
+
+        // Daily Reviews — bar + cumulative line
+        var dailyCounts = _stats.DailyReviews.Select(d => (double)d.Count).ToArray();
+
+        double running = 0;
+        var cumulative = dailyCounts.Select(c => running += c).ToArray();
+
+        // Normalize cumulative to the same scale as daily so it overlays cleanly
+        double cumulativeMax = cumulative.Length > 0 ? cumulative[^1] : 1;
+        double dailyMax      = dailyCounts.Length > 0 ? dailyCounts.Max() : 1;
+        var cumulativeScaled = cumulativeMax > 0
+            ? cumulative.Select(v => v / cumulativeMax * dailyMax).ToArray()
+            : cumulative;
+
+        _dailyReviewSeries = new List<ChartSeries<double>>
+        {
+            new() { Name = "Daily",      Data = dailyCounts       },
+            new() { Name = "Cumulative", Data = cumulativeScaled  }
+        };
+
+        _dailyReviewLabels = _stats.DailyReviews
+            .Select((d, i) => i % 5 == 0 ? d.Date.ToString("MMM d") : "")
+            .ToArray();
+
+        // Due Forecast per deck
+        var decksWithDue = _stats.DeckStats.Where(d => d.DueToday > 0).ToList();
+        _dueForecastSeries = new List<ChartSeries<double>>
+        {
+            new()
+            {
+                Name = "Due Today",
+                Data = decksWithDue.Select(d => (double)d.DueToday).ToArray()
+            }
+        };
+        _dueForecastLabels = decksWithDue.Select(d => d.DeckName).ToArray();
     }
 }

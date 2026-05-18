@@ -9,4 +9,7 @@ public interface ICardRepository
     Task UpdateAsync(Card card);
     Task DeleteAsync(int cardId);
     Task CreateAsync(Card card);
+    
+    Task<List<int>> GetCardIdsByDeckIdAsync(int deckId);
+    Task<List<int>> GetCardIdsByUserIdAsync(int userId);
 }

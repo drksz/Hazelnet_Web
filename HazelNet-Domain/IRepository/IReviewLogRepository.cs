@@ -8,6 +8,7 @@ public interface IReviewLogRepository
 {
     Task<ReviewLog?> GetReviewLogByIdAsync(int reviewLogId);
     Task<List<ReviewLog>> GetReviewLogsByReviewHistoryIdAsync(int reviewHistoryId);
+    Task<IReadOnlyDictionary<int, List<ReviewLog>>> GetReviewLogsByHistoryIdsAsync(IEnumerable<int> historyIds);
     Task UpdateAsync(ReviewLog reviewLog);
     Task DeleteAsync(int reviewLogId);
     Task CreateAsync(ReviewLog reviewLog);

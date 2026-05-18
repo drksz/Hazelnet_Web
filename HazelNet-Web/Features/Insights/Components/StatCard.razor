@@ -1,0 +1,18 @@
+﻿@* StatCard.razor *@
+<MudPaper Outlined="true" Square="true" Class="pa-4" Style="border-radius: 16px; height: 100%;">
+    <MudStack Spacing="1">
+        @if (Icon != null)
+        {
+            <MudIcon Icon="@Icon" Color="@Color" Size="Size.Medium"/>
+        }
+        <MudText Typo="Typo.h4" Color="@Color">@Value</MudText>
+        <MudText Typo="Typo.body2" Color="Color.Default">@Label</MudText>
+    </MudStack>
+</MudPaper>
+
+@code {
+    [Parameter] public string Label { get; set; } = "";
+    [Parameter] public string Value { get; set; } = "";
+    [Parameter] public string? Icon { get; set; }
+    [Parameter] public Color Color { get; set; } = Color.Default;
+}

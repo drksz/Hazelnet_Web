@@ -32,7 +32,7 @@
     </MudAlert>
 }
 
-@if (_deckCount != 0)
+@if (_deckCount > 0)
     {
         <MudContainer MaxWidth="MaxWidth.ExtraExtraLarge" Class="py-6">
          <!-- Top Row: Daily Progress + Streak -->
@@ -199,9 +199,9 @@
     }
     
 else
-    {
-        <WelcomeUserPage/>
-    }
+{
+    <WelcomeUserPage/>  
+}
     
 
 @code {

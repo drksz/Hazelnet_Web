@@ -6,9 +6,15 @@ using HazelNet_Application.CQRS.Features.Cards.Commands;
 using HazelNet_Application.CQRS.Features.Cards.Queries;
 using HazelNet_Application.CQRS.Features.Decks.Commands;
 using HazelNet_Application.CQRS.Features.Decks.Queries;
+using HazelNet_Application.CQRS.Features.Optimizer.Commands;
+using HazelNet_Application.CQRS.Features.ReviewLogs.Commands;
+using HazelNet_Application.CQRS.Features.ReviewLogs.Queries;
+using HazelNet_Application.CQRS.Features.Stats;
+using HazelNet_Application.CQRS.Features.Stats.Queries;
 using HazelNet_Application.Interface;
 using HazelNet_Domain.IRepository;
 using HazelNet_Domain.Models;
+using HazelNet_Infrastractire.DBServices.Repository;
 using HazelNet_Infrastracture.Command;
 using MudBlazor.Services;
 using HazelNet_Web.Core;
@@ -57,6 +63,7 @@ builder.Services.AddScoped<ICardRepository, CardRepository>();
 builder.Services.AddScoped<IReviewHistoryRepository, ReviewHistoryRepository>();
 builder.Services.AddScoped<IReviewLogRepository, ReviewLogRepository>();
 builder.Services.AddScoped<IFSRSParametersRepository, FSRSParametersRepository>();
+builder.Services.AddScoped<IStatsRepository, StatsRepository>();
 
 builder.Services.AddScoped<ICurrentUserService, CurrentUserService>();
 
@@ -79,6 +86,9 @@ builder.Services.AddScoped<ICommandHandler<DeleteCardCommand>, DeleteCardCommand
 builder.Services.AddScoped<IQueryHandler<GetAllDueCardsQuery, List<Card>>, GetAllDueCardsQueryHandler>();
 builder.Services.AddScoped<IQueryHandler<GetCountOfAllCardsQuery, int>, GetCountOfAllCardsQueryHandler>();
 builder.Services.AddScoped<IQueryHandler<GetCompletedDecksCountQuery, int>, GetCompletedDecksCountQueryHandler >();
+
+builder.Services.AddScoped<ICommandHandler<OptimizeWeightsCommand>, OptimizeWeightsCommandHandler>();
+builder.Services.AddScoped<IQueryHandler<GetUserStatQuery, UserStatsViewModel>, GetUserStatsQueryHandler>();
 
 
 

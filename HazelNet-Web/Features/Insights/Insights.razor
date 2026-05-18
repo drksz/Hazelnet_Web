@@ -20,6 +20,51 @@
     {
         <MudProgressLinear Indeterminate="true" Color="Color.Primary"/>
     }
+    else if (_stats == null || (_stats.TotalDecks == 0 && _stats.TotalCards == 0))
+    {
+        <MudPaper Outlined="true" Square="true" Class="pa-8 mt-8" Style="border-radius: 16px; text-align: center;">
+            <MudIcon Icon="@Icons.Material.Outlined.LibraryBooks"
+                     Style="font-size: 72px; opacity: 0.2;"
+                     Class="mb-4"/>
+
+            <MudText Typo="Typo.h5" Class="mb-2">Nothing to show yet</MudText>
+            <MudText Typo="Typo.body1" Color="Color.Default" Class="mb-1">
+                You haven't created any decks or cards yet.
+            </MudText>
+            <MudText Typo="Typo.body2" Color="Color.Default" Class="mb-6">
+                Stats, charts, and insights will appear here once you start studying.
+            </MudText>
+
+            <MudDivider Class="mb-6"/>
+
+            <MudText Typo="Typo.subtitle2" Class="mb-4">Here's what you'll see once you get started:</MudText>
+            <MudGrid Justify="Justify.Center" Spacing="3" Class="mb-6">
+                <MudItem xs="12" sm="4">
+                    <MudIcon Icon="@Icons.Material.Filled.Whatshot" Color="Color.Warning" Class="mb-1"/>
+                    <MudText Typo="Typo.body2"><b>Streak tracking</b></MudText>
+                    <MudText Typo="Typo.caption" Color="Color.Default">Daily review consistency</MudText>
+                </MudItem>
+                <MudItem xs="12" sm="4">
+                    <MudIcon Icon="@Icons.Material.Filled.AutoGraph" Color="Color.Success" Class="mb-1"/>
+                    <MudText Typo="Typo.body2"><b>Retention & Stability</b></MudText>
+                    <MudText Typo="Typo.caption" Color="Color.Default">FSRS-powered memory metrics</MudText>
+                </MudItem>
+                <MudItem xs="12" sm="4">
+                    <MudIcon Icon="@Icons.Material.Filled.BarChart" Color="Color.Primary" Class="mb-1"/>
+                    <MudText Typo="Typo.body2"><b>Review history</b></MudText>
+                    <MudText Typo="Typo.caption" Color="Color.Default">30-day activity charts</MudText>
+                </MudItem>
+            </MudGrid>
+
+            <MudButton Variant="Variant.Filled"
+                       Color="Color.Primary"
+                       StartIcon="@Icons.Material.Filled.Add"
+                       Href="/decks"
+                       Size="Size.Large">
+                Create your first deck
+            </MudButton>
+        </MudPaper>
+    }
     else if (_stats != null)
     {
         @* ── Smart Insights Banner ── *@
